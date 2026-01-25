@@ -19,6 +19,9 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
+            /* Safe zone padding - prevents taskbars/edges from covering content */
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         .hidden {
@@ -37,6 +40,15 @@
         }
 
         /* ===== NORMAL MODE ===== */
+
+        #app {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background-color: #121212;
+            border-radius: 12px;
+            overflow: hidden;
+        }
 
         /* Thin Header */
         .header {
@@ -394,7 +406,9 @@
             background: linear-gradient(135deg, #0A2F35 0%, #00A86B 100%);
             display: flex;
             flex-direction: column;
-            padding: 20px;
+            /* Safe zone padding - prevents taskbars/edges from covering content */
+            padding: 40px;
+            box-sizing: border-box;
             z-index: 1000;
         }
 
