@@ -1459,6 +1459,12 @@
                 updateCountdown();
                 updateEventMode();
             }, 1000);
+            
+            // Full page reload every 1 hour to keep everything fresh
+            setTimeout(() => {
+                console.log('🔄 Performing hourly page reload...');
+                location.reload();
+            }, 60 * 60 * 1000); // 1 hour
         }
 
         // Start the app
