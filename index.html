@@ -19,8 +19,6 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
-            padding-top: 20px;
-            padding-bottom: 1000px;
         }
 
         .hidden {
@@ -396,7 +394,7 @@
             background: linear-gradient(135deg, #0A2F35 0%, #00A86B 100%);
             display: flex;
             flex-direction: column;
-            padding: 40px 20px 100px 20px;
+            padding: 20px;
             z-index: 1000;
         }
 
@@ -1461,12 +1459,6 @@
                 updateCountdown();
                 updateEventMode();
             }, 1000);
-            
-            // Full page reload every 1 hour to keep everything fresh
-            setTimeout(() => {
-                console.log('🔄 Performing hourly page reload...');
-                location.reload();
-            }, 60 * 60 * 1000); // 1 hour
         }
 
         // Start the app
