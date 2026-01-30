@@ -579,7 +579,7 @@
             <div class="logo-section">
                 <div>
                     <div class="app-title">IOM Prayer Times</div>
-                    <div class="app-subtitle">Isle of Man Islamic Association</div>
+                    <div class="app-subtitle">Isle of Man Islamic Centre</div>
                 </div>
             </div>
             <div class="header-date" id="headerDate">Loading...</div>
@@ -996,27 +996,43 @@
             const events = [];
 
             // Regular prayers (APT, MAT, MIT)
+            const now = new Date();
+            const isFriday = now.getDay() === 5;
+            
             ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'].forEach(prayer => {
                 const times = prayerData.prayers[prayer];
 
-                // APT
+                // APT - skip Dhuhr on Fridays
                 const apt = timeToMinutes(times.apt);
-                if (apt !== null) {
+                if (apt !== null && !(isFriday && prayer === 'dhuhr')) {
                     events.push({
                         prayer: prayer,
                         type: 'APT',
                         time: times.apt,
                         minutes: apt,
-                        displayName: `${PRAYER_NAMES[prayer].en} - Actual Time`,
+                        displayName: `${PRAYER_NAMES[prayer].en} - Start Time`,
                         displayNameAr: `${PRAYER_NAMES[prayer].ar} - الوقت الفعلي`,
                         isSpecial: false,
                         durationMinutes: 5
                     });
                 }
 
-                // MAT
+                // MAT - skip Dhuhr on Fridays
                 const mat = timeToMinutes(times.mat);
-                if (mat !== null) {
+                const mit = timeToMinutes(times.mit);
+                if (mat !== null && mit !== null && !(isFriday && prayer === 'dhuhr')) {
+                    const matDuration = mit - mat;
+                    events.push({
+                        prayer: prayer,
+                        type: 'MAT',
+                        time: times.mat,
+                        minutes: mat,
+                        displayName: `${PRAYER_NAMES[prayer].en} - Adhan`,
+                        displayNameAr: `${PRAYER_NAMES[prayer].ar} - أذان`,
+                        isSpecial: false,
+                        durationMinutes: matDuration > 0 ? matDuration : 5
+                    });
+                } else if (mat !== null && !(isFriday && prayer === 'dhuhr')) {
                     events.push({
                         prayer: prayer,
                         type: 'MAT',
@@ -1029,9 +1045,8 @@
                     });
                 }
 
-                // MIT
-                const mit = timeToMinutes(times.mit);
-                if (mit !== null) {
+                // MIT - skip Dhuhr on Fridays
+                if (mit !== null && !(isFriday && prayer === 'dhuhr')) {
                     events.push({
                         prayer: prayer,
                         type: 'MIT',
@@ -1046,9 +1061,23 @@
             });
 
             // Add Jumaa (only on Fridays)
-            if (now.getDay() === 5 && prayerData.specialPrayers.jumaa) {
+            if (isFriday && prayerData.specialPrayers.jumaa) {
                 const adhan = timeToMinutes(prayerData.specialPrayers.jumaa.adhan);
-                if (adhan !== null) {
+                const iqama = timeToMinutes(prayerData.specialPrayers.jumaa.iqama);
+                
+                if (adhan !== null && iqama !== null) {
+                    const adhanDuration = iqama - adhan;
+                    events.push({
+                        prayer: 'jumaa',
+                        type: 'ADHAN',
+                        time: prayerData.specialPrayers.jumaa.adhan,
+                        minutes: adhan,
+                        displayName: `${PRAYER_NAMES.jumaa.en} - Adhan/Khutba`,
+                        displayNameAr: `${PRAYER_NAMES.jumaa.ar} - أذان/خطبة`,
+                        isSpecial: true,
+                        durationMinutes: adhanDuration > 0 ? adhanDuration : 15
+                    });
+                } else if (adhan !== null) {
                     events.push({
                         prayer: 'jumaa',
                         type: 'ADHAN',
@@ -1061,7 +1090,6 @@
                     });
                 }
 
-                const iqama = timeToMinutes(prayerData.specialPrayers.jumaa.iqama);
                 if (iqama !== null) {
                     events.push({
                         prayer: 'jumaa',
@@ -1240,7 +1268,7 @@
                         </div>
                         <div class="prayer-times-row">
                             <div class="time-column">
-                                <div class="time-label">Actual Time</div>
+                                <div class="time-label">Start Time</div>
                                 <div class="time-value">${times.apt}</div>
                             </div>
                             <div class="time-column">
