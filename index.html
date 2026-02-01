@@ -220,6 +220,10 @@
             color: #00A86B;
         }
 
+        .special-card.disabled-card {
+            opacity: 0.38;
+        }
+
         /* RIGHT SIDE */
         .right-panel {
             background: linear-gradient(135deg, #0A2F35 0%, #00A86B 100%);
@@ -584,7 +588,10 @@
                     <div class="app-subtitle">Isle of Man Islamic Centre</div>
                 </div>
             </div>
-            <div class="header-date" id="headerDate">Loading...</div>
+            <div style="text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:2px;">
+                <div class="header-date" id="headerDate">Loading...</div>
+                <div class="header-date" id="headerHijri" style="font-size:clamp(9px,1.1vw,14px); opacity:0.75;">Loading...</div>
+            </div>
         </div>
 
         <!-- Main Split Content -->
@@ -873,6 +880,12 @@
                     console.log('✅ Prayer times fetched from Aladhan');
                     const timings = data.data.timings;
                     const offsets = apiConfig.offsetMinutes;
+
+                    // Extract Hijri date
+                    const hijri = data.data.date?.hijri || {};
+                    const hijriDate = hijri.date && hijri.longMonth && hijri.longYear
+                        ? `${hijri.date} ${hijri.longMonth} ${hijri.longYear}`
+                        : null;
                     
                     // Apply offsets
                     const applyOffset = (time, offset) => {
@@ -891,6 +904,8 @@
                         asr: applyOffset(timings.Asr, offsets.asr),
                         maghrib: applyOffset(timings.Maghrib, offsets.maghrib),
                         isha: applyOffset(timings.Isha, offsets.isha),
+                        hijriDate: hijriDate,
+                        hijri: hijri
                     };
                 } else {
                     console.error('❌ Invalid response from Aladhan API');
@@ -970,6 +985,8 @@
                         isha: processPrayerTimes('isha')
                     },
                     specialPrayers: dailyConfig.specialPrayers,
+                    hijriDate: aladhanTimes.hijriDate,
+                    hijri: aladhanTimes.hijri,
                     config: {
                         location: 'Isle of Man',
                         method: apiConfig.methodName,
@@ -1105,86 +1122,119 @@
                 }
             }
 
-            // Add Taraweeh
+            // Add Taraweeh — event display only from 30 Sha'ban through 29 Ramadan
             if (prayerData.specialPrayers.taraweeh && prayerData.specialPrayers.taraweeh.time) {
-                const taraweehTime = timeToMinutes(prayerData.specialPrayers.taraweeh.time);
-                if (taraweehTime !== null) {
-                    events.push({
-                        prayer: 'taraweeh',
-                        type: 'TIME',
-                        time: prayerData.specialPrayers.taraweeh.time,
-                        minutes: taraweehTime,
-                        displayName: PRAYER_NAMES.taraweeh.en,
-                        displayNameAr: PRAYER_NAMES.taraweeh.ar,
-                        isSpecial: true,
-                        durationMinutes: 15
-                    });
+                let showTaraweehEvent = false;
+                if (prayerData.hijri) {
+                    const hMonth = (prayerData.hijri.longMonth || '').trim().toLowerCase();
+                    const hDay = parseInt(prayerData.hijri.date, 10);
+                    if (hMonth === "sha'ban" || hMonth === "sha'bān" || hMonth === "shaban" || hMonth === "shabān") {
+                        showTaraweehEvent = (hDay === 30);
+                    } else if (hMonth === 'ramadan' || hMonth === 'ramadān') {
+                        showTaraweehEvent = (hDay >= 1 && hDay <= 29);
+                    }
+                }
+                if (showTaraweehEvent) {
+                    const taraweehTime = timeToMinutes(prayerData.specialPrayers.taraweeh.time);
+                    if (taraweehTime !== null) {
+                        events.push({
+                            prayer: 'taraweeh',
+                            type: 'TIME',
+                            time: prayerData.specialPrayers.taraweeh.time,
+                            minutes: taraweehTime,
+                            displayName: PRAYER_NAMES.taraweeh.en,
+                            displayNameAr: PRAYER_NAMES.taraweeh.ar,
+                            isSpecial: true,
+                            durationMinutes: 15
+                        });
+                    }
                 }
             }
 
-            // Add Eid prayers
+            // Add Eid al-Fitr — event display only on 1 Shawwal
             if (prayerData.specialPrayers.eidFitr) {
-                if (prayerData.specialPrayers.eidFitr.prayer1 && prayerData.specialPrayers.eidFitr.prayer1.time) {
-                    const eidTime = timeToMinutes(prayerData.specialPrayers.eidFitr.prayer1.time);
-                    if (eidTime !== null) {
-                        events.push({
-                            prayer: 'eidFitr',
-                            type: 'PRAYER1',
-                            time: prayerData.specialPrayers.eidFitr.prayer1.time,
-                            minutes: eidTime,
-                            displayName: `${PRAYER_NAMES.eidFitr.en} - 1st Prayer`,
-                            displayNameAr: `${PRAYER_NAMES.eidFitr.ar} - الصلاة الأولى`,
-                            isSpecial: true,
-                            durationMinutes: 15
-                        });
+                let showEidFitrEvent = false;
+                if (prayerData.hijri) {
+                    const hMonth = (prayerData.hijri.longMonth || '').trim().toLowerCase();
+                    const hDay = parseInt(prayerData.hijri.date, 10);
+                    if ((hMonth === 'shawwal' || hMonth === 'shawwāl') && hDay === 1) {
+                        showEidFitrEvent = true;
                     }
                 }
-                if (prayerData.specialPrayers.eidFitr.prayer2 && prayerData.specialPrayers.eidFitr.prayer2.time) {
-                    const eidTime = timeToMinutes(prayerData.specialPrayers.eidFitr.prayer2.time);
-                    if (eidTime !== null) {
-                        events.push({
-                            prayer: 'eidFitr',
-                            type: 'PRAYER2',
-                            time: prayerData.specialPrayers.eidFitr.prayer2.time,
-                            minutes: eidTime,
-                            displayName: `${PRAYER_NAMES.eidFitr.en} - 2nd Prayer`,
-                            displayNameAr: `${PRAYER_NAMES.eidFitr.ar} - الصلاة الثانية`,
-                            isSpecial: true,
-                            durationMinutes: 15
-                        });
+                if (showEidFitrEvent) {
+                    if (prayerData.specialPrayers.eidFitr.prayer1 && prayerData.specialPrayers.eidFitr.prayer1.time) {
+                        const eidTime = timeToMinutes(prayerData.specialPrayers.eidFitr.prayer1.time);
+                        if (eidTime !== null) {
+                            events.push({
+                                prayer: 'eidFitr',
+                                type: 'PRAYER1',
+                                time: prayerData.specialPrayers.eidFitr.prayer1.time,
+                                minutes: eidTime,
+                                displayName: `${PRAYER_NAMES.eidFitr.en} - 1st Prayer`,
+                                displayNameAr: `${PRAYER_NAMES.eidFitr.ar} - الصلاة الأولى`,
+                                isSpecial: true,
+                                durationMinutes: 15
+                            });
+                        }
+                    }
+                    if (prayerData.specialPrayers.eidFitr.prayer2 && prayerData.specialPrayers.eidFitr.prayer2.time) {
+                        const eidTime = timeToMinutes(prayerData.specialPrayers.eidFitr.prayer2.time);
+                        if (eidTime !== null) {
+                            events.push({
+                                prayer: 'eidFitr',
+                                type: 'PRAYER2',
+                                time: prayerData.specialPrayers.eidFitr.prayer2.time,
+                                minutes: eidTime,
+                                displayName: `${PRAYER_NAMES.eidFitr.en} - 2nd Prayer`,
+                                displayNameAr: `${PRAYER_NAMES.eidFitr.ar} - الصلاة الثانية`,
+                                isSpecial: true,
+                                durationMinutes: 15
+                            });
+                        }
                     }
                 }
             }
 
+            // Add Eid al-Adha — event display only on 10 Dhul Hijjah
             if (prayerData.specialPrayers.eidAdha) {
-                if (prayerData.specialPrayers.eidAdha.prayer1 && prayerData.specialPrayers.eidAdha.prayer1.time) {
-                    const eidTime = timeToMinutes(prayerData.specialPrayers.eidAdha.prayer1.time);
-                    if (eidTime !== null) {
-                        events.push({
-                            prayer: 'eidAdha',
-                            type: 'PRAYER1',
-                            time: prayerData.specialPrayers.eidAdha.prayer1.time,
-                            minutes: eidTime,
-                            displayName: `${PRAYER_NAMES.eidAdha.en} - 1st Prayer`,
-                            displayNameAr: `${PRAYER_NAMES.eidAdha.ar} - الصلاة الأولى`,
-                            isSpecial: true,
-                            durationMinutes: 15
-                        });
+                let showEidAdhaEvent = false;
+                if (prayerData.hijri) {
+                    const hMonth = (prayerData.hijri.longMonth || '').trim().toLowerCase();
+                    const hDay = parseInt(prayerData.hijri.date, 10);
+                    if ((hMonth === 'dhul hijjah' || hMonth === "dhul hijjah" || hMonth === 'dhul hijjāh' || hMonth === "dhul hijjāh" || hMonth === 'dhul hijj' || hMonth === "dhul hijj") && hDay === 10) {
+                        showEidAdhaEvent = true;
                     }
                 }
-                if (prayerData.specialPrayers.eidAdha.prayer2 && prayerData.specialPrayers.eidAdha.prayer2.time) {
-                    const eidTime = timeToMinutes(prayerData.specialPrayers.eidAdha.prayer2.time);
-                    if (eidTime !== null) {
-                        events.push({
-                            prayer: 'eidAdha',
-                            type: 'PRAYER2',
-                            time: prayerData.specialPrayers.eidAdha.prayer2.time,
-                            minutes: eidTime,
-                            displayName: `${PRAYER_NAMES.eidAdha.en} - 2nd Prayer`,
-                            displayNameAr: `${PRAYER_NAMES.eidAdha.ar} - الصلاة الثانية`,
-                            isSpecial: true,
-                            durationMinutes: 15
-                        });
+                if (showEidAdhaEvent) {
+                    if (prayerData.specialPrayers.eidAdha.prayer1 && prayerData.specialPrayers.eidAdha.prayer1.time) {
+                        const eidTime = timeToMinutes(prayerData.specialPrayers.eidAdha.prayer1.time);
+                        if (eidTime !== null) {
+                            events.push({
+                                prayer: 'eidAdha',
+                                type: 'PRAYER1',
+                                time: prayerData.specialPrayers.eidAdha.prayer1.time,
+                                minutes: eidTime,
+                                displayName: `${PRAYER_NAMES.eidAdha.en} - 1st Prayer`,
+                                displayNameAr: `${PRAYER_NAMES.eidAdha.ar} - الصلاة الأولى`,
+                                isSpecial: true,
+                                durationMinutes: 15
+                            });
+                        }
+                    }
+                    if (prayerData.specialPrayers.eidAdha.prayer2 && prayerData.specialPrayers.eidAdha.prayer2.time) {
+                        const eidTime = timeToMinutes(prayerData.specialPrayers.eidAdha.prayer2.time);
+                        if (eidTime !== null) {
+                            events.push({
+                                prayer: 'eidAdha',
+                                type: 'PRAYER2',
+                                time: prayerData.specialPrayers.eidAdha.prayer2.time,
+                                minutes: eidTime,
+                                displayName: `${PRAYER_NAMES.eidAdha.en} - 2nd Prayer`,
+                                displayNameAr: `${PRAYER_NAMES.eidAdha.ar} - الصلاة الثانية`,
+                                isSpecial: true,
+                                durationMinutes: 15
+                            });
+                        }
                     }
                 }
             }
@@ -1286,85 +1336,71 @@
             }).join('');
         }
 
-        // Render special prayers
+        // Render special prayers — always show all types in the sidebar table
         function renderSpecialPrayers() {
             const container = document.getElementById('specialPrayers');
-            const special = prayerData.specialPrayers;
             const nextEvent = findNextEvent();
             let html = '';
 
-            // Check if it's Friday for Jumaa
-            const today = new Date();
-            if (today.getDay() === 5 && special.jumaa && special.jumaa.adhan && special.jumaa.iqama) {
+            // --- Jumaa (always shown; highlight only on Fridays when it's next) ---
+            if (prayerData.specialPrayers && prayerData.specialPrayers.jumaa) {
+                const j = prayerData.specialPrayers.jumaa;
+                const hasData = j.adhan || j.iqama;
                 const isNext = nextEvent && nextEvent.prayer === 'jumaa';
                 html += `
-                    <div class="special-card ${isNext ? 'next-prayer' : ''}" data-prayer="jumaa">
-                        <div class="special-name">${PRAYER_NAMES.jumaa.en} (${PRAYER_NAMES.jumaa.ar})</div>
-                        <div class="special-time-value">Adhan: ${special.jumaa.adhan} / Iqama: ${special.jumaa.iqama}</div>
+                    <div class="special-card ${isNext ? 'next-prayer' : ''}${!hasData ? ' disabled-card' : ''}" data-prayer="jumaa">
+                        <div class="special-name">${PRAYER_NAMES.jumaa.en} <span style="opacity:0.5;font-weight:400;">(${PRAYER_NAMES.jumaa.ar})</span></div>
+                        <div class="special-time-value">${hasData ? `Adhan: ${j.adhan || '--:--'} / Iqama: ${j.iqama || '--:--'}` : 'Not today'}</div>
                     </div>
                 `;
             }
 
-            // Taraweeh (during Ramadan)
-            if (special.taraweeh && special.taraweeh.time) {
+            // --- Taraweeh (always shown) ---
+            if (prayerData.specialPrayers && prayerData.specialPrayers.taraweeh) {
+                const t = prayerData.specialPrayers.taraweeh;
+                const hasData = t.time && t.time !== '';
                 const isNext = nextEvent && nextEvent.prayer === 'taraweeh';
                 html += `
-                    <div class="special-card ${isNext ? 'next-prayer' : ''}" data-prayer="taraweeh">
-                        <div class="special-name">${PRAYER_NAMES.taraweeh.en} (${PRAYER_NAMES.taraweeh.ar})</div>
-                        <div class="special-time-value">${special.taraweeh.time}</div>
+                    <div class="special-card ${isNext ? 'next-prayer' : ''}${!hasData ? ' disabled-card' : ''}" data-prayer="taraweeh">
+                        <div class="special-name">${PRAYER_NAMES.taraweeh.en} <span style="opacity:0.5;font-weight:400;">(${PRAYER_NAMES.taraweeh.ar})</span></div>
+                        <div class="special-time-value">${hasData ? t.time : 'Not today'}</div>
                     </div>
                 `;
             }
 
-            // Eid al-Fitr
-            if (special.eidFitr) {
-                const hasEidFitr = (special.eidFitr.prayer1 && special.eidFitr.prayer1.time) || 
-                                   (special.eidFitr.prayer2 && special.eidFitr.prayer2.time);
-                if (hasEidFitr) {
-                    const isNext = nextEvent && nextEvent.prayer === 'eidFitr';
-                    let timeDisplay = '';
-                    if (special.eidFitr.prayer1 && special.eidFitr.prayer1.time) {
-                        timeDisplay += `1st: ${special.eidFitr.prayer1.time}`;
-                    }
-                    if (special.eidFitr.prayer2 && special.eidFitr.prayer2.time) {
-                        if (timeDisplay) timeDisplay += ' / ';
-                        timeDisplay += `2nd: ${special.eidFitr.prayer2.time}`;
-                    }
-                    
-                    html += `
-                        <div class="special-card ${isNext ? 'next-prayer' : ''}" data-prayer="eidFitr">
-                            <div class="special-name">${PRAYER_NAMES.eidFitr.en} (${PRAYER_NAMES.eidFitr.ar})</div>
-                            <div class="special-time-value">${timeDisplay}</div>
-                        </div>
-                    `;
-                }
+            // --- Eid al-Fitr (always shown) ---
+            if (prayerData.specialPrayers && prayerData.specialPrayers.eidFitr) {
+                const e = prayerData.specialPrayers.eidFitr;
+                const hasData = (e.prayer1 && e.prayer1.time) || (e.prayer2 && e.prayer2.time);
+                const isNext = nextEvent && nextEvent.prayer === 'eidFitr';
+                let timeDisplay = '';
+                if (e.prayer1 && e.prayer1.time) timeDisplay += `1st: ${e.prayer1.time}`;
+                if (e.prayer2 && e.prayer2.time) timeDisplay += `${timeDisplay ? ' / ' : ''}2nd: ${e.prayer2.time}`;
+                html += `
+                    <div class="special-card ${isNext ? 'next-prayer' : ''}${!hasData ? ' disabled-card' : ''}" data-prayer="eidFitr">
+                        <div class="special-name">${PRAYER_NAMES.eidFitr.en} <span style="opacity:0.5;font-weight:400;">(${PRAYER_NAMES.eidFitr.ar})</span></div>
+                        <div class="special-time-value">${hasData ? timeDisplay : 'Not today'}</div>
+                    </div>
+                `;
             }
 
-            // Eid al-Adha
-            if (special.eidAdha) {
-                const hasEidAdha = (special.eidAdha.prayer1 && special.eidAdha.prayer1.time) || 
-                                   (special.eidAdha.prayer2 && special.eidAdha.prayer2.time);
-                if (hasEidAdha) {
-                    const isNext = nextEvent && nextEvent.prayer === 'eidAdha';
-                    let timeDisplay = '';
-                    if (special.eidAdha.prayer1 && special.eidAdha.prayer1.time) {
-                        timeDisplay += `1st: ${special.eidAdha.prayer1.time}`;
-                    }
-                    if (special.eidAdha.prayer2 && special.eidAdha.prayer2.time) {
-                        if (timeDisplay) timeDisplay += ' / ';
-                        timeDisplay += `2nd: ${special.eidAdha.prayer2.time}`;
-                    }
-                    
-                    html += `
-                        <div class="special-card ${isNext ? 'next-prayer' : ''}" data-prayer="eidAdha">
-                            <div class="special-name">${PRAYER_NAMES.eidAdha.en} (${PRAYER_NAMES.eidAdha.ar})</div>
-                            <div class="special-time-value">${timeDisplay}</div>
-                        </div>
-                    `;
-                }
+            // --- Eid al-Adha (always shown) ---
+            if (prayerData.specialPrayers && prayerData.specialPrayers.eidAdha) {
+                const e = prayerData.specialPrayers.eidAdha;
+                const hasData = (e.prayer1 && e.prayer1.time) || (e.prayer2 && e.prayer2.time);
+                const isNext = nextEvent && nextEvent.prayer === 'eidAdha';
+                let timeDisplay = '';
+                if (e.prayer1 && e.prayer1.time) timeDisplay += `1st: ${e.prayer1.time}`;
+                if (e.prayer2 && e.prayer2.time) timeDisplay += `${timeDisplay ? ' / ' : ''}2nd: ${e.prayer2.time}`;
+                html += `
+                    <div class="special-card ${isNext ? 'next-prayer' : ''}${!hasData ? ' disabled-card' : ''}" data-prayer="eidAdha">
+                        <div class="special-name">${PRAYER_NAMES.eidAdha.en} <span style="opacity:0.5;font-weight:400;">(${PRAYER_NAMES.eidAdha.ar})</span></div>
+                        <div class="special-time-value">${hasData ? timeDisplay : 'Not today'}</div>
+                    </div>
+                `;
             }
 
-            container.innerHTML = html || '<div style="padding: 10px; color: #B0B0B0; font-size: 13px;">No special prayers today</div>';
+            container.innerHTML = html || '<div style="padding:10px;color:#B0B0B0;font-size:13px;">No special prayers configured</div>';
         }
 
         // Update configuration info
@@ -1390,6 +1426,11 @@
             // Date
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             document.getElementById('headerDate').textContent = now.toLocaleDateString('en-GB', options);
+
+            // Hijri Date
+            if (prayerData.hijriDate) {
+                document.getElementById('headerHijri').textContent = prayerData.hijriDate;
+            }
         }
 
         // Update countdown
