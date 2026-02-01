@@ -1395,36 +1395,40 @@
                 `;
             }
 
-            // --- Eid al-Fitr (always shown) ---
+            // --- Eid al-Fitr (only when times are set) ---
             if (prayerData.specialPrayers && prayerData.specialPrayers.eidFitr) {
                 const e = prayerData.specialPrayers.eidFitr;
                 const hasData = (e.prayer1 && e.prayer1.time) || (e.prayer2 && e.prayer2.time);
-                const isNext = nextEvent && nextEvent.prayer === 'eidFitr';
-                let timeDisplay = '';
-                if (e.prayer1 && e.prayer1.time) timeDisplay += `1st: ${e.prayer1.time}`;
-                if (e.prayer2 && e.prayer2.time) timeDisplay += `${timeDisplay ? ' / ' : ''}2nd: ${e.prayer2.time}`;
-                html += `
-                    <div class="special-card ${isNext ? 'next-prayer' : ''}${!hasData ? ' disabled-card' : ''}" data-prayer="eidFitr">
-                        <div class="special-name">${PRAYER_NAMES.eidFitr.en} <span style="opacity:0.5;font-weight:400;">(${PRAYER_NAMES.eidFitr.ar})</span></div>
-                        <div class="special-time-value">${hasData ? timeDisplay : 'Not today'}</div>
-                    </div>
-                `;
+                if (hasData) {
+                    const isNext = nextEvent && nextEvent.prayer === 'eidFitr';
+                    let timeDisplay = '';
+                    if (e.prayer1 && e.prayer1.time) timeDisplay += `1st: ${e.prayer1.time}`;
+                    if (e.prayer2 && e.prayer2.time) timeDisplay += `${timeDisplay ? ' / ' : ''}2nd: ${e.prayer2.time}`;
+                    html += `
+                        <div class="special-card ${isNext ? 'next-prayer' : ''}" data-prayer="eidFitr">
+                            <div class="special-name">${PRAYER_NAMES.eidFitr.en} <span style="opacity:0.5;font-weight:400;">(${PRAYER_NAMES.eidFitr.ar})</span></div>
+                            <div class="special-time-value">${timeDisplay}</div>
+                        </div>
+                    `;
+                }
             }
 
-            // --- Eid al-Adha (always shown) ---
+            // --- Eid al-Adha (only when times are set) ---
             if (prayerData.specialPrayers && prayerData.specialPrayers.eidAdha) {
                 const e = prayerData.specialPrayers.eidAdha;
                 const hasData = (e.prayer1 && e.prayer1.time) || (e.prayer2 && e.prayer2.time);
-                const isNext = nextEvent && nextEvent.prayer === 'eidAdha';
-                let timeDisplay = '';
-                if (e.prayer1 && e.prayer1.time) timeDisplay += `1st: ${e.prayer1.time}`;
-                if (e.prayer2 && e.prayer2.time) timeDisplay += `${timeDisplay ? ' / ' : ''}2nd: ${e.prayer2.time}`;
-                html += `
-                    <div class="special-card ${isNext ? 'next-prayer' : ''}${!hasData ? ' disabled-card' : ''}" data-prayer="eidAdha">
-                        <div class="special-name">${PRAYER_NAMES.eidAdha.en} <span style="opacity:0.5;font-weight:400;">(${PRAYER_NAMES.eidAdha.ar})</span></div>
-                        <div class="special-time-value">${hasData ? timeDisplay : 'Not today'}</div>
-                    </div>
-                `;
+                if (hasData) {
+                    const isNext = nextEvent && nextEvent.prayer === 'eidAdha';
+                    let timeDisplay = '';
+                    if (e.prayer1 && e.prayer1.time) timeDisplay += `1st: ${e.prayer1.time}`;
+                    if (e.prayer2 && e.prayer2.time) timeDisplay += `${timeDisplay ? ' / ' : ''}2nd: ${e.prayer2.time}`;
+                    html += `
+                        <div class="special-card ${isNext ? 'next-prayer' : ''}" data-prayer="eidAdha">
+                            <div class="special-name">${PRAYER_NAMES.eidAdha.en} <span style="opacity:0.5;font-weight:400;">(${PRAYER_NAMES.eidAdha.ar})</span></div>
+                            <div class="special-time-value">${timeDisplay}</div>
+                        </div>
+                    `;
+                }
             }
 
             container.innerHTML = html || '<div style="padding:10px;color:#B0B0B0;font-size:13px;">No special prayers configured</div>';
