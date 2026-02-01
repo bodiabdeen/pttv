@@ -881,12 +881,6 @@
                     const timings = data.data.timings;
                     const offsets = apiConfig.offsetMinutes;
 
-                    // Extract Hijri date
-                    const hijri = data.data.date?.hijri || {};
-                    const hijriDate = hijri.date && hijri.longMonth && hijri.longYear
-                        ? `${hijri.date} ${hijri.longMonth} ${hijri.longYear}`
-                        : null;
-                    
                     // Apply offsets
                     const applyOffset = (time, offset) => {
                         if (!time) return '00:00';
@@ -903,9 +897,7 @@
                         dhuhr: applyOffset(timings.Dhuhr, offsets.dhuhr),
                         asr: applyOffset(timings.Asr, offsets.asr),
                         maghrib: applyOffset(timings.Maghrib, offsets.maghrib),
-                        isha: applyOffset(timings.Isha, offsets.isha),
-                        hijriDate: hijriDate,
-                        hijri: hijri
+                        isha: applyOffset(timings.Isha, offsets.isha)
                     };
                 } else {
                     console.error('❌ Invalid response from Aladhan API');
@@ -915,6 +907,42 @@
                 console.error('❌ Error fetching from Aladhan:', error);
                 return null;
             }
+        }
+
+        // ---------------------------------------------------------------
+        // Hijri date via native Intl API (islamic-umalqura, no network)
+        // Returns { display: "2 Sha'ban 1447 AH", month: 1, day: 2 }
+        // month is 0-based: 0=Muharram … 11=Dhul Hijjah
+        // ---------------------------------------------------------------
+        function getHijriInfo(date) {
+            date = date || new Date();
+
+            // 1) Get the numeric month (0-based) and day via formatToParts
+            const partsFormatter = new Intl.DateTimeFormat('en-US-u-ca-islamic-umalqura', {
+                day: 'numeric',
+                month: 'numeric',
+                year: 'numeric'
+            });
+            const parts = partsFormatter.formatToParts(date);
+            let numMonth = 0, numDay = 0, numYear = 0;
+            parts.forEach(p => {
+                if (p.type === 'month')  numMonth = parseInt(p.value, 10) - 1; // make 0-based
+                if (p.type === 'day')    numDay   = parseInt(p.value, 10);
+                if (p.type === 'year')   numYear = parseInt(p.value, 10);
+            });
+
+            // 2) Get the long month name in English
+            const monthFormatter = new Intl.DateTimeFormat('en-US-u-ca-islamic-umalqura', {
+                month: 'long'
+            });
+            const monthName = monthFormatter.format(date);
+
+            return {
+                display: `${numDay} ${monthName} ${numYear} AH`,
+                month: numMonth,   // 0-based: 0=Muharram … 7=Sha'ban, 8=Ramadan, 9=Shawwal, 11=Dhul Hijjah
+                day: numDay,
+                year: numYear
+            };
         }
 
         // Load all data
@@ -985,8 +1013,7 @@
                         isha: processPrayerTimes('isha')
                     },
                     specialPrayers: dailyConfig.specialPrayers,
-                    hijriDate: aladhanTimes.hijriDate,
-                    hijri: aladhanTimes.hijri,
+                    hijri: getHijriInfo(),
                     config: {
                         location: 'Isle of Man',
                         method: apiConfig.methodName,
@@ -1125,14 +1152,18 @@
             // Add Taraweeh — event display only from 30 Sha'ban through 29 Ramadan
             if (prayerData.specialPrayers.taraweeh && prayerData.specialPrayers.taraweeh.time) {
                 let showTaraweehEvent = false;
-                if (prayerData.hijri) {
-                    const hMonth = (prayerData.hijri.longMonth || '').trim().toLowerCase();
-                    const hDay = parseInt(prayerData.hijri.date, 10);
-                    if (hMonth === "sha'ban" || hMonth === "sha'bān" || hMonth === "shaban" || hMonth === "shabān") {
-                        showTaraweehEvent = (hDay === 30);
-                    } else if (hMonth === 'ramadan' || hMonth === 'ramadān') {
-                        showTaraweehEvent = (hDay >= 1 && hDay <= 29);
-                    }
+                const h = getHijriInfo();
+                // month 7 = Sha'ban (last day only), month 8 = Ramadan (all days except the last)
+                if (h.month === 7 && h.day === 30) {
+                    // Last day of Sha'ban — always show
+                    showTaraweehEvent = true;
+                } else if (h.month === 8) {
+                    // Inside Ramadan — show every day EXCEPT the last day.
+                    // To detect "last day": check if tomorrow is already Shawwal (month 9).
+                    const tomorrow = new Date();
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    const hTomorrow = getHijriInfo(tomorrow);
+                    showTaraweehEvent = (hTomorrow.month !== 9); // exclude last day of Ramadan
                 }
                 if (showTaraweehEvent) {
                     const taraweehTime = timeToMinutes(prayerData.specialPrayers.taraweeh.time);
@@ -1154,12 +1185,10 @@
             // Add Eid al-Fitr — event display only on 1 Shawwal
             if (prayerData.specialPrayers.eidFitr) {
                 let showEidFitrEvent = false;
-                if (prayerData.hijri) {
-                    const hMonth = (prayerData.hijri.longMonth || '').trim().toLowerCase();
-                    const hDay = parseInt(prayerData.hijri.date, 10);
-                    if ((hMonth === 'shawwal' || hMonth === 'shawwāl') && hDay === 1) {
-                        showEidFitrEvent = true;
-                    }
+                const h = getHijriInfo();
+                // month 9 = Shawwal (0-based)
+                if (h.month === 9 && h.day === 1) {
+                    showEidFitrEvent = true;
                 }
                 if (showEidFitrEvent) {
                     if (prayerData.specialPrayers.eidFitr.prayer1 && prayerData.specialPrayers.eidFitr.prayer1.time) {
@@ -1198,12 +1227,10 @@
             // Add Eid al-Adha — event display only on 10 Dhul Hijjah
             if (prayerData.specialPrayers.eidAdha) {
                 let showEidAdhaEvent = false;
-                if (prayerData.hijri) {
-                    const hMonth = (prayerData.hijri.longMonth || '').trim().toLowerCase();
-                    const hDay = parseInt(prayerData.hijri.date, 10);
-                    if ((hMonth === 'dhul hijjah' || hMonth === "dhul hijjah" || hMonth === 'dhul hijjāh' || hMonth === "dhul hijjāh" || hMonth === 'dhul hijj' || hMonth === "dhul hijj") && hDay === 10) {
-                        showEidAdhaEvent = true;
-                    }
+                const h = getHijriInfo();
+                // month 11 = Dhul Hijjah (0-based)
+                if (h.month === 11 && h.day === 10) {
+                    showEidAdhaEvent = true;
                 }
                 if (showEidAdhaEvent) {
                     if (prayerData.specialPrayers.eidAdha.prayer1 && prayerData.specialPrayers.eidAdha.prayer1.time) {
@@ -1427,10 +1454,8 @@
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             document.getElementById('headerDate').textContent = now.toLocaleDateString('en-GB', options);
 
-            // Hijri Date
-            if (prayerData.hijriDate) {
-                document.getElementById('headerHijri').textContent = prayerData.hijriDate;
-            }
+            // Hijri Date (computed client-side every tick, instant)
+            document.getElementById('headerHijri').textContent = getHijriInfo().display;
         }
 
         // Update countdown
