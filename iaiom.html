@@ -308,7 +308,7 @@
             </div>
 
             <!-- Special Prayers -->
-            <div id="specialSection" class="hidden">
+            <div id="specialSection">
                 <div class="section-title">Special Prayers</div>
                 <div class="special-prayers-grid" id="specialPrayersGrid">
                     <!-- Special prayer cards will be inserted here -->
@@ -652,14 +652,12 @@
         // Render special prayers
         function renderSpecialPrayers() {
             const container = document.getElementById('specialPrayersGrid');
-            const section = document.getElementById('specialSection');
             const special = prayerData.specialPrayers;
             let html = '';
             let hasSpecialPrayers = false;
 
-            // Check if it's Friday for Jumaa
-            const today = new Date();
-            if (today.getDay() === 5 && special.jumaa && special.jumaa.adhan && special.jumaa.iqama) {
+            // Jumaa - show always if it has values
+            if (special.jumaa && special.jumaa.adhan && special.jumaa.iqama) {
                 hasSpecialPrayers = true;
                 html += `
                     <div class="special-card">
@@ -740,12 +738,7 @@
                 }
             }
 
-            if (hasSpecialPrayers) {
-                container.innerHTML = html;
-                section.classList.remove('hidden');
-            } else {
-                section.classList.add('hidden');
-            }
+            container.innerHTML = html || '<div style="padding: 20px; color: #6C757D; text-align: center;">No special prayers today</div>';
         }
 
         // Update configuration info
