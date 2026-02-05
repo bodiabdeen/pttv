@@ -52,6 +52,48 @@
             opacity: 0.95;
         }
 
+        /* QR Codes Section */
+        .qr-section {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .qr-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .qr-item img {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            background: white;
+        }
+
+        .qr-placeholder {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: #0A2F35;
+        }
+
+        .qr-label {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
         /* Content */
         .widget-content {
             padding: 30px;
@@ -262,6 +304,18 @@
             <div class="widget-title">IOM Prayer Times</div>
             <div class="widget-subtitle">Isle of Man Islamic Association</div>
             <div class="widget-date" id="widgetDate">Loading...</div>
+            
+            <!-- QR Codes -->
+            <div class="qr-section">
+                <div class="qr-item">
+                    <div class="qr-placeholder">Android QR</div>
+                    <div class="qr-label">Android</div>
+                </div>
+                <div class="qr-item">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=https://apps.apple.com/gb/app/iom-prayer-times/id6758450458" alt="iOS QR">
+                    <div class="qr-label">iOS</div>
+                </div>
+            </div>
         </div>
 
         <!-- Content -->
