@@ -17,7 +17,7 @@
             color: #FFFFFF;
             overflow: hidden;
             width: 100%;
-            height: 100%;
+            height: 100vh;
         }
 
         /* Arabic text font */
@@ -56,10 +56,10 @@
             flex-direction: column;
         }
 
-        /* Thin Header */
+        /* Compact Header */
         .header {
             background-color: #0A2F35;
-            padding: clamp(4px, 0.8vh, 10px) clamp(10px, 2vw, 32px);
+            padding: clamp(3px, 0.5vh, 6px) clamp(8px, 1.5vw, 20px);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -69,22 +69,22 @@
         .logo-section {
             display: flex;
             align-items: center;
-            gap: clamp(8px, 1.2vw, 18px);
+            gap: clamp(6px, 1vw, 12px);
         }
 
         .app-title {
-            font-size: clamp(28px, 3.2vw, 44px);
+            font-size: clamp(20px, 2.5vw, 32px);
             font-weight: 700;
             color: #FFFFFF;
         }
 
         .app-subtitle {
-            font-size: clamp(18px, 2vw, 28px);
+            font-size: clamp(14px, 1.6vw, 20px);
             color: rgba(255, 255, 255, 0.7);
         }
 
         .header-date {
-            font-size: clamp(22px, 2.6vw, 36px);
+            font-size: clamp(16px, 2vw, 26px);
             color: rgba(255, 255, 255, 0.9);
         }
 
@@ -94,59 +94,62 @@
             display: grid;
             grid-template-columns: 2fr 1fr;
             min-height: 0;
+            overflow: hidden;
         }
 
         /* LEFT SIDE */
         .left-panel {
             background-color: #121212;
-            padding: clamp(8px, 1.2vh, 18px) clamp(10px, 1.5vw, 24px);
+            padding: clamp(4px, 0.6vh, 10px) clamp(8px, 1.2vw, 16px);
             display: flex;
             flex-direction: column;
-            gap: clamp(4px, 0.6vh, 10px);
-            overflow-y: auto;
-            min-height: 0;
+            gap: clamp(2px, 0.3vh, 5px);
+            overflow: hidden;
         }
 
         .section-title {
-            font-size: clamp(32px, 4vw, 56px);
+            font-size: clamp(22px, 2.8vw, 36px);
             font-weight: 600;
             color: #00A86B;
-            margin-bottom: clamp(2px, 0.3vh, 5px);
+            margin-bottom: clamp(1px, 0.2vh, 3px);
         }
 
         .prayers-list {
             display: flex;
             flex-direction: column;
-            gap: clamp(4px, 0.5vh, 8px);
+            gap: clamp(2px, 0.3vh, 5px);
+            flex-shrink: 1;
+            min-height: 0;
         }
 
         .prayer-card {
             background-color: #1E1E1E;
             border: 1px solid #2C2C2C;
-            border-radius: clamp(6px, 0.8vw, 12px);
-            padding: clamp(5px, 0.7vh, 10px) clamp(8px, 1vw, 16px);
+            border-radius: clamp(4px, 0.6vw, 8px);
+            padding: clamp(3px, 0.4vh, 6px) clamp(6px, 0.8vw, 12px);
             display: grid;
             grid-template-columns: auto 1fr;
-            gap: clamp(6px, 1vw, 16px);
+            gap: clamp(4px, 0.7vw, 10px);
             align-items: center;
         }
 
         .prayer-card.next-prayer {
             border: 2px solid #00A86B;
-            box-shadow: 0 4px 12px rgba(0, 168, 107, 0.2);
+            box-shadow: 0 3px 8px rgba(0, 168, 107, 0.2);
             background-color: rgba(0, 168, 107, 0.05);
         }
 
         .prayer-name-section {
             display: flex;
             flex-direction: column;
-            min-width: clamp(120px, 13vw, 200px);
+            min-width: clamp(90px, 10vw, 140px);
         }
 
         .prayer-name-en {
-            font-size: clamp(36px, 4.5vw, 60px);
+            font-size: clamp(24px, 3vw, 40px);
             font-weight: 700;
             color: #FFFFFF;
+            line-height: 1;
         }
 
         .next-prayer .prayer-name-en {
@@ -154,15 +157,16 @@
         }
 
         .prayer-name-ar {
-            font-size: clamp(28px, 3.2vw, 44px);
+            font-size: clamp(18px, 2.2vw, 28px);
             color: #B0B0B0;
             margin-top: 0px;
+            line-height: 1;
         }
 
         .prayer-times-row {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: clamp(4px, 0.6vw, 10px);
+            gap: clamp(3px, 0.4vw, 6px);
         }
 
         .time-column {
@@ -170,18 +174,20 @@
         }
 
         .time-label {
-            font-size: clamp(18px, 2vw, 26px);
+            font-size: clamp(12px, 1.4vw, 18px);
             font-weight: 600;
             color: #B0B0B0;
             margin-bottom: 1px;
             text-transform: uppercase;
             letter-spacing: 0.3px;
+            line-height: 1;
         }
 
         .time-value {
-            font-size: clamp(32px, 3.8vw, 50px);
+            font-size: clamp(20px, 2.6vw, 34px);
             font-weight: 600;
             color: #FFFFFF;
+            line-height: 1;
         }
 
         .next-prayer .time-value {
@@ -189,18 +195,20 @@
             font-weight: 700;
         }
 
-        /* Special Prayers */
+        /* Special Prayers - More Compact */
         .special-prayers-compact {
             display: flex;
             flex-direction: column;
-            gap: clamp(4px, 0.5vh, 7px);
+            gap: clamp(2px, 0.3vh, 4px);
+            flex-shrink: 1;
+            margin-top: clamp(3px, 0.5vh, 8px);
         }
 
         .special-card {
             background-color: #1E1E1E;
             border: 1px solid #2C2C2C;
-            border-radius: clamp(5px, 0.7vw, 10px);
-            padding: clamp(5px, 0.7vh, 10px) clamp(8px, 1vw, 14px);
+            border-radius: clamp(4px, 0.5vw, 7px);
+            padding: clamp(3px, 0.4vh, 6px) clamp(6px, 0.8vw, 10px);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -212,9 +220,10 @@
         }
 
         .special-name {
-            font-size: clamp(26px, 3vw, 42px);
+            font-size: clamp(16px, 2vw, 28px);
             font-weight: 600;
             color: #FFFFFF;
+            line-height: 1.1;
         }
 
         .special-card.next-prayer .special-name {
@@ -222,9 +231,10 @@
         }
 
         .special-time-value {
-            font-size: clamp(28px, 3.4vw, 46px);
+            font-size: clamp(16px, 2.2vw, 30px);
             font-weight: 700;
             color: #FFFFFF;
+            line-height: 1;
         }
 
         .special-card.next-prayer .special-time-value {
@@ -235,104 +245,110 @@
             opacity: 0.38;
         }
 
-        /* RIGHT SIDE */
+        /* RIGHT SIDE - Optimized */
         .right-panel {
             background: linear-gradient(135deg, #0A2F35 0%, #00A86B 100%);
-            padding: clamp(15px, 2.5vh, 40px) clamp(15px, 2.5vw, 40px);
+            padding: clamp(8px, 1.5vh, 20px) clamp(10px, 1.8vw, 25px);
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            gap: clamp(10px, 2vh, 35px);
-            min-height: 0;
+            overflow: hidden;
         }
 
         .giant-clock {
             text-align: center;
+            flex-shrink: 1;
         }
 
         .clock-label {
-            font-size: clamp(22px, 2.8vw, 38px);
+            font-size: clamp(14px, 1.8vw, 24px);
             font-weight: 600;
             color: rgba(255, 255, 255, 0.8);
-            margin-bottom: clamp(4px, 0.6vh, 10px);
+            margin-bottom: clamp(2px, 0.3vh, 5px);
             text-transform: uppercase;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
+            line-height: 1;
         }
 
         .clock-time {
-            font-size: clamp(48px, 9vw, 130px);
+            font-size: clamp(32px, 6vw, 80px);
             font-weight: 900;
             color: #FFFFFF;
-            letter-spacing: 4px;
+            letter-spacing: 3px;
             line-height: 1;
             font-family: 'Courier New', monospace;
-            text-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+            text-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
         }
 
         .separator {
             width: 80%;
-            height: 2px;
+            height: 1px;
             background: rgba(255, 255, 255, 0.3);
             flex-shrink: 0;
+            margin: clamp(4px, 0.8vh, 12px) 0;
         }
 
         .giant-countdown {
             text-align: center;
             width: 100%;
+            flex-shrink: 1;
         }
 
         .countdown-label {
-            font-size: clamp(24px, 3vw, 42px);
+            font-size: clamp(16px, 2vw, 28px);
             font-weight: 600;
             color: rgba(255, 255, 255, 0.9);
-            margin-bottom: clamp(5px, 0.8vh, 16px);
+            margin-bottom: clamp(3px, 0.5vh, 8px);
             text-transform: uppercase;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
+            line-height: 1;
         }
 
         .next-prayer-display {
-            margin-bottom: clamp(8px, 1.2vh, 24px);
+            margin-bottom: clamp(4px, 0.7vh, 12px);
         }
 
         .next-prayer-name-large {
-            font-size: clamp(48px, 8vw, 100px);
+            font-size: clamp(28px, 5vw, 60px);
             font-weight: 900;
             color: #FFFFFF;
-            margin-bottom: clamp(3px, 0.5vh, 8px);
-            text-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            margin-bottom: clamp(2px, 0.3vh, 5px);
+            text-shadow: 0 3px 12px rgba(0, 0, 0, 0.3);
+            line-height: 1;
         }
 
         .next-prayer-ar-large {
-            font-size: clamp(32px, 5.5vw, 70px);
+            font-size: clamp(20px, 3.5vw, 45px);
             font-weight: 700;
             color: rgba(255, 255, 255, 0.95);
+            line-height: 1.1;
         }
 
         .countdown-timer-giant {
-            font-size: clamp(40px, 7.5vw, 110px);
+            font-size: clamp(28px, 5vw, 70px);
             font-weight: 900;
             color: #FFFFFF;
-            letter-spacing: 4px;
+            letter-spacing: 3px;
             line-height: 1;
             font-family: 'Courier New', monospace;
-            text-shadow: 0 6px 28px rgba(0, 0, 0, 0.6);
+            text-shadow: 0 4px 18px rgba(0, 0, 0, 0.6);
         }
 
-        /* Config & Download */
+        /* Config & Download - More Compact */
         .bottom-info {
-            width: 90%;
+            width: 95%;
             margin-top: auto;
             display: flex;
             flex-direction: column;
-            gap: clamp(4px, 0.6vh, 10px);
+            gap: clamp(3px, 0.4vh, 6px);
             flex-shrink: 0;
         }
 
         .config-strip {
             background-color: rgba(0, 0, 0, 0.2);
-            padding: clamp(4px, 0.6vh, 10px) clamp(8px, 1.2vw, 18px);
-            border-radius: clamp(6px, 0.8vw, 14px);
+            padding: clamp(3px, 0.4vh, 6px) clamp(6px, 1vw, 12px);
+            border-radius: clamp(4px, 0.6vw, 10px);
             backdrop-filter: blur(10px);
             display: flex;
             justify-content: space-around;
@@ -343,39 +359,42 @@
         }
 
         .config-label {
-            font-size: clamp(14px, 1.5vw, 20px);
+            font-size: clamp(10px, 1.2vw, 15px);
             color: rgba(255, 255, 255, 0.7);
             text-transform: uppercase;
             margin-bottom: 1px;
+            line-height: 1;
         }
 
         .config-value {
-            font-size: clamp(18px, 2vw, 28px);
+            font-size: clamp(12px, 1.5vw, 20px);
             color: #FFFFFF;
             font-weight: 600;
+            line-height: 1.1;
         }
 
         .download-strip {
             background-color: rgba(0, 0, 0, 0.2);
-            padding: clamp(5px, 0.7vh, 12px) clamp(8px, 1.2vw, 18px);
-            border-radius: clamp(6px, 0.8vw, 14px);
+            padding: clamp(3px, 0.5vh, 8px) clamp(6px, 1vw, 12px);
+            border-radius: clamp(4px, 0.6vw, 10px);
             backdrop-filter: blur(10px);
             text-align: center;
         }
 
         .download-title {
-            font-size: clamp(14px, 1.8vw, 26px);
+            font-size: clamp(11px, 1.4vw, 18px);
             font-weight: 700;
             color: #FFFFFF;
-            margin-bottom: clamp(3px, 0.4vh, 7px);
+            margin-bottom: clamp(2px, 0.3vh, 5px);
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
+            line-height: 1;
         }
 
         .qr-boxes {
             display: flex;
             justify-content: center;
-            gap: clamp(10px, 1.5vw, 24px);
+            gap: clamp(6px, 1vw, 15px);
         }
 
         .qr-box {
@@ -385,23 +404,21 @@
         }
 
         .qr-placeholder {
-            width: clamp(48px, 6vw, 96px);
-            height: clamp(48px, 6vw, 96px);
+            width: clamp(40px, 5vw, 70px);
+            height: clamp(40px, 5vw, 70px);
             background-color: rgba(255, 255, 255, 0.9);
-            border-radius: clamp(5px, 0.6vw, 10px);
+            border-radius: clamp(4px, 0.5vw, 8px);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: clamp(11px, 1.2vw, 18px);
-            font-weight: 600;
-            color: #0A2F35;
-            margin-bottom: clamp(3px, 0.4vh, 8px);
+            margin-bottom: clamp(2px, 0.3vh, 5px);
         }
 
         .qr-label {
-            font-size: clamp(13px, 1.4vw, 21px);
+            font-size: clamp(10px, 1.2vw, 16px);
             font-weight: 600;
             color: #FFFFFF;
+            line-height: 1;
         }
 
         /* ===== EVENT MODE ===== */
@@ -616,7 +633,7 @@
                 </div>
 
                 <!-- Special Prayers -->
-                <div style="margin-top: 15px;">
+                <div style="margin-top: clamp(3px, 0.5vh, 8px);">
                     <div class="section-title">Special Prayers</div>
                     <div class="special-prayers-compact" id="specialPrayers">
                         <!-- Special prayer cards will be inserted here -->
@@ -668,11 +685,11 @@
                         <div class="download-title">📱 Download Our App</div>
                         <div class="qr-boxes">
                             <div class="qr-box">
-                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=https://play.google.com/store/apps/details?id=com.iomprayertimes" alt="Android QR" style="width: 80px; height: 80px; border-radius: 8px;">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=70x70&data=https://play.google.com/store/apps/details?id=com.iomprayertimes" alt="Android QR" style="width: clamp(40px, 5vw, 70px); height: clamp(40px, 5vw, 70px); border-radius: 6px;">
                                 <div class="qr-label">Android</div>
                             </div>
                             <div class="qr-box">
-                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=https://apps.apple.com/gb/app/iom-prayer-times/id6758450458" alt="iOS QR" style="width: 80px; height: 80px; border-radius: 8px;">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=70x70&data=https://apps.apple.com/gb/app/iom-prayer-times/id6758450458" alt="iOS QR" style="width: clamp(40px, 5vw, 70px); height: clamp(40px, 5vw, 70px); border-radius: 6px;">
                                 <div class="qr-label">iOS</div>
                             </div>
                         </div>
@@ -1387,8 +1404,8 @@
                 const isNext = nextEvent && nextEvent.prayer === 'jumaa';
                 html += `
                     <div class="special-card ${isNext ? 'next-prayer' : ''}${!hasData ? ' disabled-card' : ''}" data-prayer="jumaa">
-                        <div class="special-name">${PRAYER_NAMES.jumaa.en} <span style="opacity:0.5;font-weight:400;">(${PRAYER_NAMES.jumaa.ar})</span></div>
-                        <div class="special-time-value">${hasData ? `Adhan: ${j.adhan || '--:--'} / Iqama: ${j.iqama || '--:--'}` : 'Not today'}</div>
+                        <div class="special-name">${PRAYER_NAMES.jumaa.en} <span style="opacity:0.5;font-weight:400;font-size:0.85em;">(${PRAYER_NAMES.jumaa.ar})</span></div>
+                        <div class="special-time-value">${hasData ? `Adh: ${j.adhan || '--:--'} / Iqm: ${j.iqama || '--:--'}` : 'Not today'}</div>
                     </div>
                 `;
             }
@@ -1400,7 +1417,7 @@
                 const isNext = nextEvent && nextEvent.prayer === 'taraweeh';
                 html += `
                     <div class="special-card ${isNext ? 'next-prayer' : ''}${!hasData ? ' disabled-card' : ''}" data-prayer="taraweeh">
-                        <div class="special-name">${PRAYER_NAMES.taraweeh.en} <span style="opacity:0.5;font-weight:400;">(${PRAYER_NAMES.taraweeh.ar})</span></div>
+                        <div class="special-name">${PRAYER_NAMES.taraweeh.en} <span style="opacity:0.5;font-weight:400;font-size:0.85em;">(${PRAYER_NAMES.taraweeh.ar})</span></div>
                         <div class="special-time-value">${hasData ? t.time : 'Not today'}</div>
                     </div>
                 `;
@@ -1417,7 +1434,7 @@
                     if (e.prayer2 && e.prayer2.time) timeDisplay += `${timeDisplay ? ' / ' : ''}2nd: ${e.prayer2.time}`;
                     html += `
                         <div class="special-card ${isNext ? 'next-prayer' : ''}" data-prayer="eidFitr">
-                            <div class="special-name">${PRAYER_NAMES.eidFitr.en} <span style="opacity:0.5;font-weight:400;">(${PRAYER_NAMES.eidFitr.ar})</span></div>
+                            <div class="special-name">${PRAYER_NAMES.eidFitr.en} <span style="opacity:0.5;font-weight:400;font-size:0.85em;">(${PRAYER_NAMES.eidFitr.ar})</span></div>
                             <div class="special-time-value">${timeDisplay}</div>
                         </div>
                     `;
@@ -1435,7 +1452,7 @@
                     if (e.prayer2 && e.prayer2.time) timeDisplay += `${timeDisplay ? ' / ' : ''}2nd: ${e.prayer2.time}`;
                     html += `
                         <div class="special-card ${isNext ? 'next-prayer' : ''}" data-prayer="eidAdha">
-                            <div class="special-name">${PRAYER_NAMES.eidAdha.en} <span style="opacity:0.5;font-weight:400;">(${PRAYER_NAMES.eidAdha.ar})</span></div>
+                            <div class="special-name">${PRAYER_NAMES.eidAdha.en} <span style="opacity:0.5;font-weight:400;font-size:0.85em;">(${PRAYER_NAMES.eidAdha.ar})</span></div>
                             <div class="special-time-value">${timeDisplay}</div>
                         </div>
                     `;
