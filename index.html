@@ -1413,7 +1413,7 @@
                 html += `
                     <div class="special-card ${isNext ? 'next-prayer' : ''}${!hasData ? ' disabled-card' : ''}" data-prayer="jumaa">
                         <div class="special-name">${PRAYER_NAMES.jumaa.en} <span style="opacity:0.5;font-weight:400;font-size:0.85em;">(${PRAYER_NAMES.jumaa.ar})</span></div>
-                        <div class="special-time-value">${hasData ? `Adh: ${j.adhan || '--:--'} / Iqm: ${j.iqama || '--:--'}` : 'Not today'}</div>
+                        <div class="special-time-value">${hasData ? `Adhan/Khutba: ${j.adhan || '--:--'} / Iqama: ${j.iqama || '--:--'}` : 'Not today'}</div>
                     </div>
                 `;
             }
