@@ -501,6 +501,13 @@
 
                 const hijriInfo = getHijriInfo();
                 
+                // Get Hijri date from Aladhan API (more reliable across all browsers)
+                const hijriDate = aladhanData.date?.hijri || {
+                    day: hijriInfo.day,
+                    month: { en: hijriInfo.monthName },
+                    year: hijriInfo.year
+                };
+                
                 // Helper to process prayer times with correct fallback logic
                 const processPrayer = (prayer) => {
                     const apt = aladhanData.timings[prayer.charAt(0).toUpperCase() + prayer.slice(1)];
@@ -524,11 +531,7 @@
                     config: apiConfig,
                     aladhan: aladhanData.timings,
                     date: {
-                        hijri: {
-                            day: hijriInfo.day,
-                            month: { en: hijriInfo.monthName },
-                            year: hijriInfo.year
-                        }
+                        hijri: hijriDate
                     },
                     dailyTimes: {
                         fajr: processPrayer('fajr'),
