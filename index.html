@@ -72,6 +72,14 @@
             gap: clamp(6px, 1vw, 12px);
         }
 
+        .logo-icon {
+            width: clamp(32px, 4vw, 48px);
+            height: clamp(32px, 4vw, 48px);
+            border-radius: 50%;
+            flex-shrink: 0;
+            object-fit: cover;
+        }
+
         .app-title {
             font-size: clamp(20px, 2.5vw, 32px);
             font-weight: 700;
@@ -611,6 +619,7 @@
         <!-- Thin Header -->
         <div class="header">
             <div class="logo-section">
+                <img src="icon.png" alt="IOM Prayer Times Logo" class="logo-icon">
                 <div>
                     <div class="app-title">IOM Prayer Times</div>
                     <div class="app-subtitle">Isle of Man Islamic Centre</div>
@@ -726,20 +735,20 @@
                 <div class="event-time-large pulse" id="eventTimeDisplay">--:--</div>
             </div>
 
-            <!-- Bottom Row: No Phones + Next Event -->
+            <!-- Bottom Row: Next Event + No Phones -->
             <div class="event-bottom-row">
-                <!-- No Phones Warning -->
-                <div class="no-phones-section">
-                    <div class="no-phones-icon">📵</div>
-                    <div class="no-phones-text">No Mobile Phones</div>
-                </div>
-
                 <!-- Next Event Countdown -->
                 <div class="event-next-section">
                     <div class="event-next-label">Next Event</div>
                     <div class="event-next-prayer-name" id="eventNextName">Loading...</div>
                     <div class="event-next-prayer-ar" id="eventNextNameAr">...</div>
                     <div class="event-countdown-timer" id="eventNextCountdown">00:00:00</div>
+                </div>
+
+                <!-- No Phones Warning -->
+                <div class="no-phones-section">
+                    <div class="no-phones-icon">📵</div>
+                    <div class="no-phones-text">No Mobile Phones</div>
                 </div>
             </div>
         </div>
