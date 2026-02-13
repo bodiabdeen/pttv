@@ -457,6 +457,7 @@
         function getHijriInfo(date) {
             date = date || new Date();
 
+            // Get numeric parts first
             const partsFormatter = new Intl.DateTimeFormat('en-US-u-ca-islamic-umalqura', {
                 day: 'numeric',
                 month: 'numeric',
@@ -465,11 +466,12 @@
             const parts = partsFormatter.formatToParts(date);
             let numMonth = 0, numDay = 0, numYear = 0;
             parts.forEach(p => {
-                if (p.type === 'month')  numMonth = parseInt(p.value, 10) - 1;
+                if (p.type === 'month')  numMonth = parseInt(p.value, 10);
                 if (p.type === 'day')    numDay   = parseInt(p.value, 10);
                 if (p.type === 'year')   numYear = parseInt(p.value, 10);
             });
 
+            // Get month name using Islamic calendar
             const monthFormatter = new Intl.DateTimeFormat('en-US-u-ca-islamic-umalqura', {
                 month: 'long'
             });
@@ -478,7 +480,7 @@
             return {
                 display: `${numDay} ${monthName} ${numYear} AH`,
                 monthName: monthName,
-                month: numMonth,
+                month: numMonth - 1, // 0-based for compatibility
                 day: numDay,
                 year: numYear
             };
