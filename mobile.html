@@ -170,6 +170,29 @@
             font-weight: 700;
         }
 
+        /* Sunrise Card */
+        .sunrise-card {
+            background-color: #1E1E1E;
+            border: 1px solid #2C2C2C;
+            border-radius: 8px;
+            padding: 10px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sunrise-name {
+            font-size: 22px;
+            font-weight: 600;
+            color: #FFA500;
+        }
+
+        .sunrise-time {
+            font-size: 20px;
+            font-weight: 600;
+            color: #FFA500;
+        }
+
         /* Special Prayers */
         .special-prayers {
             display: flex;
@@ -297,6 +320,7 @@
         // Prayer Names
         const PRAYER_NAMES = {
             fajr: { en: 'Fajr', ar: 'الفجر' },
+            sunrise: { en: 'Sunrise', ar: 'الشروق' },
             dhuhr: { en: 'Dhuhr', ar: 'الظهر' },
             asr: { en: 'Asr', ar: 'العصر' },
             maghrib: { en: 'Maghrib', ar: 'المغرب' },
@@ -357,6 +381,23 @@
                             asr: dailyPrayers.asr?.mit || '00:00',
                             maghrib: dailyPrayers.maghrib?.mit || '00:00',
                             isha: dailyPrayers.isha?.mit || '00:00',
+                        },
+                        specialPrayers: {
+                            jumaa: data.jumaa ? {
+                                adhan: data.jumaa.adhan_khutba || '',
+                                iqama: data.jumaa.iqama || '',
+                            } : undefined,
+                            taraweeh: data.taraweeh?.time ? {
+                                time: data.taraweeh.time
+                            } : undefined,
+                            eidFitr: data.eid?.fitr ? {
+                                prayer1: { time: data.eid.fitr.prayer1?.time || '' },
+                                prayer2: { time: data.eid.fitr.prayer2?.time || '' }
+                            } : undefined,
+                            eidAdha: data.eid?.adha ? {
+                                prayer1: { time: data.eid.adha.prayer1?.time || '' },
+                                prayer2: { time: data.eid.adha.prayer2?.time || '' }
+                            } : undefined,
                         }
                     };
                 }
@@ -364,22 +405,6 @@
             } catch (error) {
                 console.error('❌ Error fetching daily config:', error);
                 return null;
-            }
-        }
-
-        async function fetchSpecialConfig() {
-            try {
-                const docRef = doc(db, FIREBASE_CONFIG.COLLECTION, FIREBASE_CONFIG.DOCUMENTS.SPECIAL_CONFIG);
-                const docSnap = await getDoc(docRef);
-                
-                if (docSnap.exists()) {
-                    console.log('✅ Special Config fetched');
-                    return docSnap.data();
-                }
-                return {};
-            } catch (error) {
-                console.error('❌ Error fetching special config:', error);
-                return {};
             }
         }
 
@@ -409,6 +434,35 @@
             return `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
         };
 
+        function getHijriInfo(date) {
+            date = date || new Date();
+
+            const partsFormatter = new Intl.DateTimeFormat('en-US-u-ca-islamic-umalqura', {
+                day: 'numeric',
+                month: 'numeric',
+                year: 'numeric'
+            });
+            const parts = partsFormatter.formatToParts(date);
+            let numMonth = 0, numDay = 0, numYear = 0;
+            parts.forEach(p => {
+                if (p.type === 'month')  numMonth = parseInt(p.value, 10) - 1;
+                if (p.type === 'day')    numDay   = parseInt(p.value, 10);
+                if (p.type === 'year')   numYear = parseInt(p.value, 10);
+            });
+
+            const monthFormatter = new Intl.DateTimeFormat('en-US-u-ca-islamic-umalqura', {
+                month: 'long'
+            });
+            const monthName = monthFormatter.format(date);
+
+            return {
+                display: `${numDay} ${monthName} ${numYear} AH`,
+                month: numMonth,
+                day: numDay,
+                year: numYear
+            };
+        }
+
         async function loadPrayerData() {
             try {
                 console.log('🔄 Loading prayer data...');
@@ -422,41 +476,52 @@
                 const aladhanData = await fetchPrayerTimesFromAladhan(apiConfig);
                 if (!aladhanData) return false;
 
-                const specialConfig = await fetchSpecialConfig();
+                const hijriInfo = getHijriInfo();
                 
                 prayerData = {
                     config: apiConfig,
                     aladhan: aladhanData.timings,
-                    date: aladhanData.date,
+                    date: {
+                        hijri: {
+                            day: hijriInfo.day,
+                            month: { en: hijriInfo.display.split(' ')[1] },
+                            year: hijriInfo.year
+                        }
+                    },
                     dailyTimes: {
                         fajr: {
                             adhan: aladhanData.timings.Fajr,
-                            iqama: dailyConfig.mat.fajr,
-                            jamaa: dailyConfig.mit.fajr || addMinutes(dailyConfig.mat.fajr, 5)
+                            iqama: dailyConfig.mat.fajr || aladhanData.timings.Fajr,
+                            jamaa: dailyConfig.mit.fajr || addMinutes(dailyConfig.mat.fajr || aladhanData.timings.Fajr, 5)
+                        },
+                        sunrise: {
+                            time: aladhanData.timings.Sunrise
                         },
                         dhuhr: {
                             adhan: aladhanData.timings.Dhuhr,
-                            iqama: dailyConfig.mat.dhuhr,
-                            jamaa: dailyConfig.mit.dhuhr || addMinutes(dailyConfig.mat.dhuhr, 5)
+                            iqama: dailyConfig.mat.dhuhr || aladhanData.timings.Dhuhr,
+                            jamaa: dailyConfig.mit.dhuhr || addMinutes(dailyConfig.mat.dhuhr || aladhanData.timings.Dhuhr, 5)
                         },
                         asr: {
                             adhan: aladhanData.timings.Asr,
-                            iqama: dailyConfig.mat.asr,
-                            jamaa: dailyConfig.mit.asr || addMinutes(dailyConfig.mat.asr, 5)
+                            iqama: dailyConfig.mat.asr || aladhanData.timings.Asr,
+                            jamaa: dailyConfig.mit.asr || addMinutes(dailyConfig.mat.asr || aladhanData.timings.Asr, 5)
                         },
                         maghrib: {
                             adhan: aladhanData.timings.Maghrib,
-                            iqama: dailyConfig.mat.maghrib,
-                            jamaa: dailyConfig.mit.maghrib || addMinutes(dailyConfig.mat.maghrib, 5)
+                            iqama: dailyConfig.mat.maghrib || aladhanData.timings.Maghrib,
+                            jamaa: dailyConfig.mit.maghrib || addMinutes(dailyConfig.mat.maghrib || aladhanData.timings.Maghrib, 5)
                         },
                         isha: {
                             adhan: aladhanData.timings.Isha,
-                            iqama: dailyConfig.mat.isha,
-                            jamaa: dailyConfig.mit.isha || addMinutes(dailyConfig.mat.isha, 5)
+                            iqama: dailyConfig.mat.isha || aladhanData.timings.Isha,
+                            jamaa: dailyConfig.mit.isha || addMinutes(dailyConfig.mat.isha || aladhanData.timings.Isha, 5)
                         }
                     },
-                    specialPrayers: specialConfig
+                    specialPrayers: dailyConfig.specialPrayers || {}
                 };
+
+                console.log('✅ Prayer data loaded:', prayerData);
 
                 return true;
             } catch (error) {
@@ -536,35 +601,47 @@
 
             let html = '';
             prayers.forEach(prayer => {
-                const times = prayerData.dailyTimes[prayer];
-                const adhan = times?.adhan || '--:--';
-                const iqama = times?.iqama || '--:--';
-                const jamaa = times?.jamaa || '--:--';
-                
-                const isNext = nextEvent && nextEvent.prayer === prayer;
-                
-                html += `
-                    <div class="prayer-card ${isNext ? 'next-prayer' : ''}" data-prayer="${prayer}">
-                        <div class="prayer-header">
-                            <div class="prayer-name-en">${PRAYER_NAMES[prayer].en}</div>
-                            <div class="prayer-name-ar" lang="ar">${PRAYER_NAMES[prayer].ar}</div>
+                if (prayer === 'sunrise') {
+                    // Special rendering for sunrise
+                    const sunriseTime = prayerData.dailyTimes.sunrise?.time || '--:--';
+                    html += `
+                        <div class="sunrise-card" data-prayer="sunrise">
+                            <div class="sunrise-name">☀️ ${PRAYER_NAMES.sunrise.en} <span style="opacity:0.7;font-size:0.85em;font-weight:400;">(${PRAYER_NAMES.sunrise.ar})</span></div>
+                            <div class="sunrise-time">${sunriseTime}</div>
                         </div>
-                        <div class="prayer-times-row">
-                            <div class="time-column">
-                                <div class="time-label">Adhan</div>
-                                <div class="time-value">${adhan}</div>
+                    `;
+                } else {
+                    // Regular prayer card
+                    const times = prayerData.dailyTimes[prayer];
+                    const adhan = times?.adhan || '--:--';
+                    const iqama = times?.iqama || '--:--';
+                    const jamaa = times?.jamaa || '--:--';
+                    
+                    const isNext = nextEvent && nextEvent.prayer === prayer;
+                    
+                    html += `
+                        <div class="prayer-card ${isNext ? 'next-prayer' : ''}" data-prayer="${prayer}">
+                            <div class="prayer-header">
+                                <div class="prayer-name-en">${PRAYER_NAMES[prayer].en}</div>
+                                <div class="prayer-name-ar" lang="ar">${PRAYER_NAMES[prayer].ar}</div>
                             </div>
-                            <div class="time-column">
-                                <div class="time-label">Iqama</div>
-                                <div class="time-value">${iqama}</div>
-                            </div>
-                            <div class="time-column">
-                                <div class="time-label">Jama'ah</div>
-                                <div class="time-value">${jamaa}</div>
+                            <div class="prayer-times-row">
+                                <div class="time-column">
+                                    <div class="time-label">Adhan</div>
+                                    <div class="time-value">${adhan}</div>
+                                </div>
+                                <div class="time-column">
+                                    <div class="time-label">Iqama</div>
+                                    <div class="time-value">${iqama}</div>
+                                </div>
+                                <div class="time-column">
+                                    <div class="time-label">Jama'ah</div>
+                                    <div class="time-value">${jamaa}</div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                }
             });
 
             container.innerHTML = html;
