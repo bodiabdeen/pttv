@@ -394,7 +394,7 @@
         .qr-boxes {
             display: flex;
             justify-content: center;
-            gap: clamp(6px, 1vw, 15px);
+            gap: clamp(10px, 1.5vw, 20px);
         }
 
         .qr-box {
@@ -404,18 +404,18 @@
         }
 
         .qr-placeholder {
-            width: clamp(40px, 5vw, 70px);
-            height: clamp(40px, 5vw, 70px);
+            width: clamp(90px, 10vw, 150px);
+            height: clamp(90px, 10vw, 150px);
             background-color: rgba(255, 255, 255, 0.9);
-            border-radius: clamp(4px, 0.5vw, 8px);
+            border-radius: clamp(6px, 0.8vw, 12px);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: clamp(2px, 0.3vh, 5px);
+            margin-bottom: clamp(3px, 0.4vh, 7px);
         }
 
         .qr-label {
-            font-size: clamp(10px, 1.2vw, 16px);
+            font-size: clamp(12px, 1.5vw, 20px);
             font-weight: 600;
             color: #FFFFFF;
             line-height: 1;
@@ -618,7 +618,7 @@
             </div>
             <div style="text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:2px;">
                 <div class="header-date" id="headerDate">Loading...</div>
-                <div class="header-date" id="headerHijri" style="font-size:clamp(9px,1.1vw,14px); opacity:0.75;">Loading...</div>
+                <div class="header-date" id="headerHijri" style="font-size:clamp(14px,1.8vw,22px); opacity:0.75;">Loading...</div>
             </div>
         </div>
 
@@ -682,15 +682,23 @@
 
                     <!-- Download App Strip -->
                     <div class="download-strip">
-                        <div class="download-title">📱 Download Our App</div>
+                        <div class="download-title">
+                            
+                            📱 Download Our App
+                        
+                        </div>
                         <div class="qr-boxes">
                             <div class="qr-box">
-                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=70x70&data=https://play.google.com/store/apps/details?id=com.iomprayertimes" alt="Android QR" style="width: clamp(40px, 5vw, 70px); height: clamp(40px, 5vw, 70px); border-radius: 6px;">
-                                <div class="qr-label">Android</div>
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://play.google.com/store/apps/details?id=com.iomprayertimes" alt="Android QR" style="width: clamp(90px, 10vw, 150px); height: clamp(90px, 10vw, 150px); border-radius: 8px;">
+                                <div class="qr-label">
+                                    
+                                    Android</div>
                             </div>
                             <div class="qr-box">
-                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=70x70&data=https://apps.apple.com/gb/app/iom-prayer-times/id6758450458" alt="iOS QR" style="width: clamp(40px, 5vw, 70px); height: clamp(40px, 5vw, 70px); border-radius: 6px;">
-                                <div class="qr-label">iOS</div>
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://apps.apple.com/gb/app/iom-prayer-times/id6758450458" alt="iOS QR" style="width: clamp(90px, 10vw, 150px); height: clamp(90px, 10vw, 150px); border-radius: 8px;">
+                                <div class="qr-label">
+                                    
+                                    iOS</div>
                             </div>
                         </div>
                     </div>
