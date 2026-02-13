@@ -383,7 +383,7 @@
 
         .download-strip {
             background-color: rgba(0, 0, 0, 0.2);
-            padding: clamp(3px, 0.5vh, 8px) clamp(6px, 1vw, 12px);
+            padding: clamp(12px, 1.5vh, 20px) clamp(16px, 2vw, 24px);
             border-radius: clamp(4px, 0.6vw, 10px);
             backdrop-filter: blur(10px);
             text-align: center;
@@ -393,16 +393,26 @@
             font-size: clamp(11px, 1.4vw, 18px);
             font-weight: 700;
             color: #FFFFFF;
-            margin-bottom: clamp(2px, 0.3vh, 5px);
+            margin-bottom: clamp(8px, 1vh, 15px);
             text-transform: uppercase;
             letter-spacing: 1px;
             line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(8px, 1vw, 12px);
+        }
+
+        .download-icon {
+            width: clamp(18px, 2vw, 28px);
+            height: clamp(18px, 2vw, 28px);
+            object-fit: contain;
         }
 
         .qr-boxes {
             display: flex;
             justify-content: center;
-            gap: clamp(10px, 1.5vw, 20px);
+            gap: clamp(20px, 3vw, 40px);
         }
 
         .qr-box {
@@ -419,7 +429,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: clamp(3px, 0.4vh, 7px);
+            margin-bottom: clamp(8px, 1vh, 12px);
         }
 
         .qr-label {
@@ -621,8 +631,8 @@
             <div class="logo-section">
                 <img src="icon.png" alt="IOM Prayer Times Logo" class="logo-icon">
                 <div>
-                    <div class="app-title">IOM Prayer Times</div>
-                    <div class="app-subtitle">Isle of Man Islamic Centre</div>
+                    <div class="app-title">Isle of Man Islamic Centre</div>
+                    <div class="app-subtitle">Prayer Times</div>
                 </div>
             </div>
             <div style="text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:2px;">
@@ -692,22 +702,19 @@
                     <!-- Download App Strip -->
                     <div class="download-strip">
                         <div class="download-title">
-                            
-                            📱 Download Our App
-                        
+                            <img src="icon.png" alt="App Icon" class="download-icon">
+                            Download Our App
                         </div>
                         <div class="qr-boxes">
                             <div class="qr-box">
                                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://play.google.com/store/apps/details?id=com.iomprayertimes" alt="Android QR" style="width: clamp(90px, 10vw, 150px); height: clamp(90px, 10vw, 150px); border-radius: 8px;">
-                                <div class="qr-label">
-                                    
-                                    Android</div>
+                                <br>
+                                <div class="qr-label">Android</div>
                             </div>
                             <div class="qr-box">
                                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://apps.apple.com/gb/app/iom-prayer-times/id6758450458" alt="iOS QR" style="width: clamp(90px, 10vw, 150px); height: clamp(90px, 10vw, 150px); border-radius: 8px;">
-                                <div class="qr-label">
-                                    
-                                    iOS</div>
+                                <br>
+                                <div class="qr-label">iOS</div>
                             </div>
                         </div>
                     </div>
