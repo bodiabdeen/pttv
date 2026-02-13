@@ -485,6 +485,25 @@
 
                 const hijriInfo = getHijriInfo();
                 
+                // Helper to process prayer times with correct fallback logic
+                const processPrayer = (prayer) => {
+                    const apt = aladhanData.timings[prayer.charAt(0).toUpperCase() + prayer.slice(1)];
+                    const mat = dailyConfig.mat[prayer];
+                    const mit = dailyConfig.mit[prayer];
+                    
+                    // If MAT is missing or 00:00, use APT
+                    const finalMat = (!mat || mat === '00:00') ? apt : mat;
+                    
+                    // If MIT is missing or 00:00, use MAT + 5 minutes
+                    const finalMit = (!mit || mit === '00:00') ? addMinutes(finalMat, 5) : mit;
+                    
+                    return {
+                        adhan: apt,      // Start time (APT)
+                        iqama: finalMat, // Adhan (MAT, defaults to APT)
+                        jamaa: finalMit  // Iqama (MIT, defaults to MAT+5)
+                    };
+                };
+                
                 prayerData = {
                     config: apiConfig,
                     aladhan: aladhanData.timings,
@@ -496,34 +515,14 @@
                         }
                     },
                     dailyTimes: {
-                        fajr: {
-                            adhan: aladhanData.timings.Fajr,
-                            iqama: dailyConfig.mat.fajr || aladhanData.timings.Fajr,
-                            jamaa: dailyConfig.mit.fajr || addMinutes(dailyConfig.mat.fajr || aladhanData.timings.Fajr, 5)
-                        },
+                        fajr: processPrayer('fajr'),
                         sunrise: {
                             time: aladhanData.timings.Sunrise
                         },
-                        dhuhr: {
-                            adhan: aladhanData.timings.Dhuhr,
-                            iqama: dailyConfig.mat.dhuhr || aladhanData.timings.Dhuhr,
-                            jamaa: dailyConfig.mit.dhuhr || addMinutes(dailyConfig.mat.dhuhr || aladhanData.timings.Dhuhr, 5)
-                        },
-                        asr: {
-                            adhan: aladhanData.timings.Asr,
-                            iqama: dailyConfig.mat.asr || aladhanData.timings.Asr,
-                            jamaa: dailyConfig.mit.asr || addMinutes(dailyConfig.mat.asr || aladhanData.timings.Asr, 5)
-                        },
-                        maghrib: {
-                            adhan: aladhanData.timings.Maghrib,
-                            iqama: dailyConfig.mat.maghrib || aladhanData.timings.Maghrib,
-                            jamaa: dailyConfig.mit.maghrib || addMinutes(dailyConfig.mat.maghrib || aladhanData.timings.Maghrib, 5)
-                        },
-                        isha: {
-                            adhan: aladhanData.timings.Isha,
-                            iqama: dailyConfig.mat.isha || aladhanData.timings.Isha,
-                            jamaa: dailyConfig.mit.isha || addMinutes(dailyConfig.mat.isha || aladhanData.timings.Isha, 5)
-                        }
+                        dhuhr: processPrayer('dhuhr'),
+                        asr: processPrayer('asr'),
+                        maghrib: processPrayer('maghrib'),
+                        isha: processPrayer('isha')
                     },
                     specialPrayers: dailyConfig.specialPrayers || {}
                 };
@@ -634,15 +633,15 @@
                             </div>
                             <div class="prayer-times-row">
                                 <div class="time-column">
-                                    <div class="time-label">Adhan</div>
+                                    <div class="time-label">Start time</div>
                                     <div class="time-value">${adhan}</div>
                                 </div>
                                 <div class="time-column">
-                                    <div class="time-label">Iqama</div>
+                                    <div class="time-label">Adhan</div>
                                     <div class="time-value">${iqama}</div>
                                 </div>
                                 <div class="time-column">
-                                    <div class="time-label">Jama'ah</div>
+                                    <div class="time-label">Iqama</div>
                                     <div class="time-value">${jamaa}</div>
                                 </div>
                             </div>
