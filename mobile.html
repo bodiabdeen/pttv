@@ -532,7 +532,7 @@
         function renderPrayerTimes() {
             const container = document.getElementById('dailyPrayers');
             const nextEvent = findNextEvent();
-            const prayers = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
+            const prayers = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'];
 
             let html = '';
             prayers.forEach(prayer => {
