@@ -775,7 +775,7 @@
             asr: { en: 'Asr', ar: 'العصر' },
             maghrib: { en: 'Maghrib', ar: 'المغرب' },
             isha: { en: 'Isha', ar: 'العشاء' },
-            jumaa: { en: 'Jumaa', ar: 'الجمعة' },
+            jumaa: { en: "Jumu'ah", ar: 'الجمعة' },
             taraweeh: { en: 'Taraweeh', ar: 'التراويح' },
             eidFitr: { en: 'Eid al-Fitr', ar: 'عيد الفطر' },
             eidAdha: { en: 'Eid al-Adha', ar: 'عيد الأضحى' }
@@ -1141,7 +1141,7 @@
                 if (adhan !== null && iqama !== null) {
                     const adhanDuration = iqama - adhan;
                     events.push({
-                        prayer: 'jumaa',
+                        prayer: "Jumu'ah",
                         type: 'ADHAN',
                         time: prayerData.specialPrayers.jumaa.adhan,
                         minutes: adhan,
@@ -1152,7 +1152,7 @@
                     });
                 } else if (adhan !== null) {
                     events.push({
-                        prayer: 'jumaa',
+                        prayer: "Jumu'ah",
                         type: 'ADHAN',
                         time: prayerData.specialPrayers.jumaa.adhan,
                         minutes: adhan,
@@ -1165,7 +1165,7 @@
 
                 if (iqama !== null) {
                     events.push({
-                        prayer: 'jumaa',
+                        prayer: "Jumu'ah",
                         type: 'IQAMA',
                         time: prayerData.specialPrayers.jumaa.iqama,
                         minutes: iqama,
@@ -1401,7 +1401,7 @@
             if (prayerData.specialPrayers && prayerData.specialPrayers.jumaa) {
                 const j = prayerData.specialPrayers.jumaa;
                 const hasData = j.adhan || j.iqama;
-                const isNext = nextEvent && nextEvent.prayer === 'jumaa';
+                const isNext = nextEvent && nextEvent.prayer === "Jumu'ah";
                 html += `
                     <div class="special-card ${isNext ? 'next-prayer' : ''}${!hasData ? ' disabled-card' : ''}" data-prayer="jumaa">
                         <div class="special-name">${PRAYER_NAMES.jumaa.en} <span style="opacity:0.5;font-weight:400;font-size:0.85em;">(${PRAYER_NAMES.jumaa.ar})</span></div>
