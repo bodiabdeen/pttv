@@ -52,6 +52,34 @@
             opacity: 0.95;
         }
 
+        .date-container {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .gregorian-date, .hijri-date {
+            font-size: 15px;
+            opacity: 0.95;
+        }
+
+        .hijri-date {
+            font-size: 14px;
+            opacity: 0.85;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .gregorian-date, .hijri-date {
+                font-size: 13px;
+            }
+            
+            .hijri-date {
+                font-size: 12px;
+            }
+        }
+
         /* Store Icons Section */
         .store-section {
             display: flex;
@@ -286,11 +314,14 @@
         <div class="widget-header">
             <div class="widget-title">IOM Prayer Times</div>
             <div class="widget-subtitle">Isle of Man Islamic Association</div>
-            <div class="widget-date" id="widgetDate">Loading...</div>
+            <div class="date-container">
+                <div class="gregorian-date" id="widgetDate">Loading...</div>
+                <div class="hijri-date" id="hijriDate">Loading...</div>
+            </div>
             
             <!-- Store Icons -->
             <div class="store-section">
-                <a href="#" class="store-link" id="androidStoreLink">
+                <a href="https://play.google.com/store/apps/details?id=com.iomprayertimes" class="store-link" id="androidStoreLink" target="_blank" rel="noopener">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play" class="store-icon">
                 </a>
                 <a href="https://apps.apple.com/gb/app/iom-prayer-times/id6758450458" class="store-link" target="_blank" rel="noopener">
@@ -400,6 +431,9 @@
             }
         };
 
+        // Global Hijri date data
+        let hijriDateData = null;
+
         // Fetch API Config from Firebase
         async function fetchApiConfig() {
             try {
@@ -504,6 +538,12 @@
                     console.log('✅ Prayer times fetched from Aladhan');
                     const timings = data.data.timings;
                     const offsets = apiConfig.offsetMinutes;
+                    
+                    // Store Hijri date information
+                    if (data.data.date && data.data.date.hijri) {
+                        hijriDateData = data.data.date.hijri;
+                        console.log('✅ Hijri date extracted:', hijriDateData);
+                    }
                     
                     // Apply offsets
                     const applyOffset = (time, offset) => {
@@ -750,9 +790,31 @@
 
         // Update date
         function updateDate() {
+            // Update Gregorian date
             const now = new Date();
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             document.getElementById('widgetDate').textContent = now.toLocaleDateString('en-GB', options);
+            
+            // Update Hijri date
+            updateHijriDate();
+        }
+
+        // Update Hijri date
+        function updateHijriDate() {
+            const hijriElement = document.getElementById('hijriDate');
+            
+            if (hijriDateData) {
+                // Format Hijri date: Day Month Year
+                const day = hijriDateData.day;
+                const month = hijriDateData.month.en;
+                const year = hijriDateData.year;
+                
+                hijriElement.textContent = `${day} ${month} ${year} AH`;
+                console.log('✅ Hijri date displayed:', hijriElement.textContent);
+            } else {
+                hijriElement.textContent = 'Hijri date unavailable';
+                console.warn('⚠️ Hijri date data not available');
+            }
         }
 
         // Initialize widget
