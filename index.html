@@ -1206,9 +1206,14 @@
                 let showTaraweehEvent = false;
                 const h = getHijriInfo();
                 // month 7 = Sha'ban (last day only), month 8 = Ramadan (all days except the last)
-                if (h.month === 7 && h.day === 30) {
-                    // Last day of Sha'ban — always show
-                    showTaraweehEvent = true;
+                if (h.month === 7) {
+                    // Last day of Sha'ban — check if tomorrow is Ramadan (handles both 29 and 30-day Sha'ban)
+                    const tomorrowShaban = new Date();
+                    tomorrowShaban.setDate(tomorrowShaban.getDate() + 1);
+                    const hTomorrowShaban = getHijriInfo(tomorrowShaban);
+                    if (hTomorrowShaban.month === 8) {
+                        showTaraweehEvent = true;
+                    }
                 } else if (h.month === 8) {
                     // Inside Ramadan — show every day EXCEPT the last day.
                     // To detect "last day": check if tomorrow is already Shawwal (month 9).
