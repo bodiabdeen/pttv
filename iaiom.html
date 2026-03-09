@@ -391,6 +391,7 @@
             DOCUMENTS: {
                 API_CONFIG: 'apiConfig',
                 DAILY_CONFIG: 'dailyConfig',
+                FALLBACK_RULES: 'fallbackRules',
             }
         };
 
@@ -522,6 +523,61 @@
             }
         }
 
+        // Fetch Fallback Rules from Firebase
+        async function fetchFallbackRules() {
+            try {
+                const docRef = doc(db, FIREBASE_CONFIG.COLLECTION, FIREBASE_CONFIG.DOCUMENTS.FALLBACK_RULES);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    console.log('✅ Fallback Rules fetched:', data);
+                    
+                    return {
+                        fajr: {
+                            matOffset: data.fajr?.matOffset || 0,
+                            mitOffset: data.fajr?.mitOffset || 5,
+                        },
+                        dhuhr: {
+                            matOffset: data.dhuhr?.matOffset || 0,
+                            mitOffset: data.dhuhr?.mitOffset || 5,
+                        },
+                        asr: {
+                            matOffset: data.asr?.matOffset || 0,
+                            mitOffset: data.asr?.mitOffset || 5,
+                        },
+                        maghrib: {
+                            matOffset: data.maghrib?.matOffset || 0,
+                            mitOffset: data.maghrib?.mitOffset || 5,
+                        },
+                        isha: {
+                            matOffset: data.isha?.matOffset || 0,
+                            mitOffset: data.isha?.mitOffset || 5,
+                        },
+                    };
+                } else {
+                    console.warn('⚠️ Fallback Rules document not found, using defaults');
+                    return {
+                        fajr: { matOffset: 0, mitOffset: 5 },
+                        dhuhr: { matOffset: 0, mitOffset: 5 },
+                        asr: { matOffset: 0, mitOffset: 5 },
+                        maghrib: { matOffset: 0, mitOffset: 5 },
+                        isha: { matOffset: 0, mitOffset: 5 },
+                    };
+                }
+            } catch (error) {
+                console.error('❌ Error fetching fallback rules:', error);
+                // Return defaults if fetch fails
+                return {
+                    fajr: { matOffset: 0, mitOffset: 5 },
+                    dhuhr: { matOffset: 0, mitOffset: 5 },
+                    asr: { matOffset: 0, mitOffset: 5 },
+                    maghrib: { matOffset: 0, mitOffset: 5 },
+                    isha: { matOffset: 0, mitOffset: 5 },
+                };
+            }
+        }
+
         // Fetch prayer times from Aladhan API
         async function fetchPrayerTimesFromAladhan(apiConfig) {
             try {
@@ -592,6 +648,10 @@
                     return false;
                 }
                 
+                // Fetch fallback rules
+                const fallbackRules = await fetchFallbackRules();
+                console.log('📋 Fallback rules loaded:', fallbackRules);
+                
                 // Fetch prayer times from Aladhan
                 const aladhanTimes = await fetchPrayerTimesFromAladhan(apiConfig);
                 if (!aladhanTimes) {
@@ -599,7 +659,7 @@
                     return false;
                 }
                 
-                // Helper function to add 5 minutes to a time
+                // Helper function to add minutes to a time
                 const addMinutes = (timeStr, minutesToAdd) => {
                     if (!timeStr || timeStr === '--:--' || timeStr === '00:00') return '00:00';
                     const [hours, minutes] = timeStr.split(':').map(Number);
@@ -609,22 +669,23 @@
                     return `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
                 };
                 
-                // Apply smart fallback logic for 5 main prayers
+                // Apply smart fallback logic for 5 main prayers using database rules
                 const processPrayerTimes = (prayer) => {
                     const apt = aladhanTimes[prayer];
                     let mat = dailyConfig.mat[prayer];
                     let mit = dailyConfig.mit[prayer];
+                    const rules = fallbackRules[prayer];
                     
-                    // If MAT is missing or 00:00, use APT
+                    // If MAT is missing or 00:00, use APT + matOffset from database
                     if (!mat || mat === '00:00' || mat === '--:--') {
-                        mat = apt;
-                        console.log(`ℹ️ ${prayer}: MAT missing, using APT (${apt})`);
+                        mat = addMinutes(apt, rules.matOffset);
+                        console.log(`ℹ️ ${prayer}: MAT missing, using APT + ${rules.matOffset} mins (${mat})`);
                     }
                     
-                    // If MIT is missing or 00:00, use MAT + 5 minutes
+                    // If MIT is missing or 00:00, use MAT + mitOffset from database
                     if (!mit || mit === '00:00' || mit === '--:--') {
-                        mit = addMinutes(mat, 5);
-                        console.log(`ℹ️ ${prayer}: MIT missing, using MAT + 5 mins (${mit})`);
+                        mit = addMinutes(mat, rules.mitOffset);
+                        console.log(`ℹ️ ${prayer}: MIT missing, using MAT + ${rules.mitOffset} mins (${mit})`);
                     }
                     
                     return { apt, mat, mit };
