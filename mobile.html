@@ -368,7 +368,7 @@
                         latitude: data.latitude || 54.15,
                         longitude: data.longitude || -4.48,
                         methodName: data.methodName || 'Umm al-Qura',
-                        schoolName: data.schoolName || 'Shafi'
+                        schoolName: (data.schoolName || 'Shafi\'i, Maliki, Hanbali').replace("Shafi'i, Maliki, Ja'fari, Hanbali", "Shafi'i, Maliki, Hanbali"),
                     };
                 }
                 return null;
