@@ -697,6 +697,10 @@
                             <div class="config-label">School</div>
                             <div class="config-value" id="school">Loading...</div>
                         </div>
+                        <div class="config-item">
+                            <div class="config-label">Offsets (mins)</div>
+                            <div class="config-value" id="offsets">Loading...</div>
+                        </div>
                     </div>
 
                     <!-- Download App Strip -->
@@ -1191,7 +1195,8 @@
                     config: {
                         location: 'Isle of Man',
                         method: apiConfig.methodName,
-                        school: apiConfig.schoolName
+                        school: apiConfig.schoolName,
+                        offsets: apiConfig.offsetMinutes
                     }
                 };
                 
@@ -1618,6 +1623,17 @@
             document.getElementById('location').textContent = prayerData.config.location;
             document.getElementById('method').textContent = prayerData.config.method;
             document.getElementById('school').textContent = prayerData.config.school;
+
+            // Build offset display: only show non-zero values
+            const o = prayerData.config.offsets || {};
+            const parts = [
+                o.fajr    ? `Fajr ${o.fajr > 0 ? '+' : ''}${o.fajr}`       : null,
+                o.dhuhr   ? `Dhuhr ${o.dhuhr > 0 ? '+' : ''}${o.dhuhr}`     : null,
+                o.asr     ? `Asr ${o.asr > 0 ? '+' : ''}${o.asr}`           : null,
+                o.maghrib ? `Maghrib ${o.maghrib > 0 ? '+' : ''}${o.maghrib}`: null,
+                o.isha    ? `Isha ${o.isha > 0 ? '+' : ''}${o.isha}`         : null,
+            ].filter(Boolean);
+            document.getElementById('offsets').textContent = parts.length ? parts.join(', ') : 'None';
         }
 
         // Update current time and date

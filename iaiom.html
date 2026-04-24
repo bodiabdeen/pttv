@@ -361,6 +361,10 @@
                 <div class="footer-label">Juristic School</div>
                 <div class="footer-value" id="school">Loading...</div>
             </div>
+            <div class="footer-item">
+                <div class="footer-label">Offsets (mins)</div>
+                <div class="footer-value" id="offsets">Loading...</div>
+            </div>
         </div>
     </div>
 
@@ -766,7 +770,8 @@
                     config: {
                         location: 'Isle of Man',
                         method: apiConfig.methodName,
-                        school: apiConfig.schoolName
+                        school: apiConfig.schoolName,
+                        offsets: apiConfig.offsetMinutes
                     }
                 };
                 
@@ -908,6 +913,17 @@
             document.getElementById('location').textContent = prayerData.config.location;
             document.getElementById('method').textContent = prayerData.config.method;
             document.getElementById('school').textContent = prayerData.config.school;
+
+            // Build offset display: only show non-zero values
+            const o = prayerData.config.offsets || {};
+            const parts = [
+                o.fajr    ? `Fajr ${o.fajr > 0 ? '+' : ''}${o.fajr}`        : null,
+                o.dhuhr   ? `Dhuhr ${o.dhuhr > 0 ? '+' : ''}${o.dhuhr}`      : null,
+                o.asr     ? `Asr ${o.asr > 0 ? '+' : ''}${o.asr}`            : null,
+                o.maghrib ? `Maghrib ${o.maghrib > 0 ? '+' : ''}${o.maghrib}` : null,
+                o.isha    ? `Isha ${o.isha > 0 ? '+' : ''}${o.isha}`          : null,
+            ].filter(Boolean);
+            document.getElementById('offsets').textContent = parts.length ? parts.join(', ') : 'None';
         }
 
         // Update date

@@ -305,6 +305,7 @@
         <div class="footer">
             <div class="footer-info">📍 Douglas, Isle of Man</div>
             <div class="footer-info">Method: <span id="method">Loading...</span> | School: <span id="school">Loading...</span></div>
+            <div class="footer-info">Offsets: <span id="offsets">Loading...</span></div>
         </div>
     </div>
 
@@ -868,6 +869,17 @@
         function updateConfigInfo() {
             document.getElementById('method').textContent = prayerData.config.methodName;
             document.getElementById('school').textContent = prayerData.config.schoolName;
+
+            // Build offset display: only show non-zero values
+            const o = prayerData.config.offsetMinutes || {};
+            const parts = [
+                o.fajr    ? `Fajr ${o.fajr > 0 ? '+' : ''}${o.fajr}`        : null,
+                o.dhuhr   ? `Dhuhr ${o.dhuhr > 0 ? '+' : ''}${o.dhuhr}`      : null,
+                o.asr     ? `Asr ${o.asr > 0 ? '+' : ''}${o.asr}`            : null,
+                o.maghrib ? `Maghrib ${o.maghrib > 0 ? '+' : ''}${o.maghrib}` : null,
+                o.isha    ? `Isha ${o.isha > 0 ? '+' : ''}${o.isha}`          : null,
+            ].filter(Boolean);
+            document.getElementById('offsets').textContent = parts.length ? parts.join(', ') : 'None';
         }
 
         function updateCurrentDate() {
