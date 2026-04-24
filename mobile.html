@@ -331,10 +331,10 @@
         const FIREBASE_CONFIG = {
             COLLECTION: 'prayerTimes',
             DOCUMENTS: {
-                API_CONFIG: 'apiConfig',
-                DAILY_CONFIG: 'dailyConfig',
-                SPECIAL_CONFIG: 'specialConfig',
-                FALLBACK_RULES: 'fallbackRules',
+                API_CONFIG:      'apiConfig',
+                DAILY_CONFIG:    'dailyConfig',
+                FALLBACK_RULES:  'fallbackRules',
+                SCHEDULED_TIMES: 'scheduledTimes',
             }
         };
 
@@ -542,6 +542,46 @@
             };
         }
 
+        // Returns today's date key as YYYY-MM-DD
+        function getTodayKey() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        // Returns true only if a time string is valid, non-empty, non-zero
+        function isValidTime(t) {
+            return !!t && t !== '' && t !== '00:00';
+        }
+
+        // Fetch per-date scheduled times from Firebase (① highest priority)
+        // Non-fatal: returns null if document missing or no entry for today
+        async function fetchScheduledTimesForToday() {
+            try {
+                const docRef = doc(db, FIREBASE_CONFIG.COLLECTION, FIREBASE_CONFIG.DOCUMENTS.SCHEDULED_TIMES);
+                const docSnap = await getDoc(docRef);
+
+                if (!docSnap.exists()) {
+                    console.log('📅 No scheduledTimes document — using daily config');
+                    return null;
+                }
+
+                const all = docSnap.data();
+                const todayKey = getTodayKey();
+                const todayEntry = all?.[todayKey];
+
+                if (!todayEntry) {
+                    console.log(`📅 No scheduled entry for today (${todayKey}) — using daily config`);
+                    return null;
+                }
+
+                console.log(`✅ Scheduled times found for today (${todayKey})`);
+                return todayEntry;
+            } catch (error) {
+                console.error('❌ Error fetching scheduled times (falling back to daily config):', error);
+                return null;
+            }
+        }
+
         async function loadPrayerData() {
             try {
                 console.log('🔄 Loading prayer data...');
@@ -552,6 +592,9 @@
                 const dailyConfig = await fetchDailyConfig();
                 if (!dailyConfig) return false;
                 
+                // Fetch scheduled times for today (① priority — overrides dailyConfig when set)
+                const scheduled = await fetchScheduledTimesForToday();
+
                 // Fetch fallback rules
                 const fallbackRules = await fetchFallbackRules();
                 console.log('📋 Fallback rules loaded:', fallbackRules);
@@ -568,31 +611,46 @@
                     year: hijriInfo.year
                 };
                 
-                // Helper to process prayer times with database-driven fallback logic
+                // MAT/MIT Priority:
+                //   ① scheduled[prayer].mat/mit  — per-date override (if set)
+                //   ② dailyConfig.mat/mit[prayer] — default manual times
+                //   ③ APT + fallbackRules offset  — auto fallback
                 const processPrayer = (prayer) => {
                     const apt = aladhanData.timings[prayer.charAt(0).toUpperCase() + prayer.slice(1)];
-                    const mat = dailyConfig.mat[prayer];
-                    const mit = dailyConfig.mit[prayer];
                     const rules = fallbackRules[prayer];
-                    
-                    // If MAT is missing or 00:00, use APT + matOffset from database
-                    let finalMat = mat;
-                    if (!mat || mat === '00:00') {
+
+                    // Resolve MAT
+                    const schedMat = scheduled?.[prayer]?.mat;
+                    const dailyMat = dailyConfig.mat[prayer];
+                    let finalMat;
+                    if (isValidTime(schedMat)) {
+                        finalMat = schedMat;
+                        console.log(`📅 ${prayer}: MAT from scheduledTimes (${finalMat})`);
+                    } else if (isValidTime(dailyMat)) {
+                        finalMat = dailyMat;
+                    } else {
                         finalMat = addMinutes(apt, rules.matOffset);
-                        console.log(`ℹ️ ${prayer}: MAT missing, using APT + ${rules.matOffset} mins (${finalMat})`);
+                        console.log(`ℹ️ ${prayer}: MAT fallback APT + ${rules.matOffset} mins (${finalMat})`);
                     }
-                    
-                    // If MIT is missing or 00:00, use MAT + mitOffset from database
-                    let finalMit = mit;
-                    if (!mit || mit === '00:00') {
+
+                    // Resolve MIT
+                    const schedMit = scheduled?.[prayer]?.mit;
+                    const dailyMit = dailyConfig.mit[prayer];
+                    let finalMit;
+                    if (isValidTime(schedMit)) {
+                        finalMit = schedMit;
+                        console.log(`📅 ${prayer}: MIT from scheduledTimes (${finalMit})`);
+                    } else if (isValidTime(dailyMit)) {
+                        finalMit = dailyMit;
+                    } else {
                         finalMit = addMinutes(finalMat, rules.mitOffset);
-                        console.log(`ℹ️ ${prayer}: MIT missing, using MAT + ${rules.mitOffset} mins (${finalMit})`);
+                        console.log(`ℹ️ ${prayer}: MIT fallback MAT + ${rules.mitOffset} mins (${finalMit})`);
                     }
                     
                     return {
-                        adhan: apt,      // Start time (APT)
-                        iqama: finalMat, // Adhan (MAT, defaults to APT + matOffset)
-                        jamaa: finalMit  // Iqama (MIT, defaults to MAT + mitOffset)
+                        adhan: apt,       // Start time (APT)
+                        iqama: finalMat,  // Adhan (MAT)
+                        jamaa: finalMit   // Iqama (MIT)
                     };
                 };
                 

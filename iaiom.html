@@ -389,9 +389,10 @@
         const FIREBASE_CONFIG = {
             COLLECTION: 'prayerTimes',
             DOCUMENTS: {
-                API_CONFIG: 'apiConfig',
-                DAILY_CONFIG: 'dailyConfig',
-                FALLBACK_RULES: 'fallbackRules',
+                API_CONFIG:      'apiConfig',
+                DAILY_CONFIG:    'dailyConfig',
+                FALLBACK_RULES:  'fallbackRules',
+                SCHEDULED_TIMES: 'scheduledTimes',
             }
         };
 
@@ -449,7 +450,7 @@
                         latitude: data.latitude || 54.15,
                         longitude: data.longitude || -4.48,
                         methodName: data.methodName || 'Umm al-Qura, Makkah',
-                        schoolName: data.schoolName || 'Shafi, Maliki, Jafari, Hanbali',
+                        schoolName: (data.schoolName || 'Shafi\'i, Maliki, Hanbali').replace("Shafi'i, Maliki, Ja'fari, Hanbali", "Shafi'i, Maliki, Hanbali"),
                         offsetMinutes: {
                             fajr: data.offsets?.fajr || 0,
                             dhuhr: data.offsets?.dhuhr || 0,
@@ -629,6 +630,46 @@
             }
         }
 
+        // Returns today's date key as YYYY-MM-DD
+        function getTodayKey() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        // Returns true only if a time string is valid, non-empty, non-zero
+        function isValidTime(t) {
+            return !!t && t !== '' && t !== '00:00';
+        }
+
+        // Fetch per-date scheduled times from Firebase (① highest priority)
+        // Non-fatal: returns null if document missing or no entry for today
+        async function fetchScheduledTimesForToday() {
+            try {
+                const docRef = doc(db, FIREBASE_CONFIG.COLLECTION, FIREBASE_CONFIG.DOCUMENTS.SCHEDULED_TIMES);
+                const docSnap = await getDoc(docRef);
+
+                if (!docSnap.exists()) {
+                    console.log('📅 No scheduledTimes document — using daily config');
+                    return null;
+                }
+
+                const all = docSnap.data();
+                const todayKey = getTodayKey();
+                const todayEntry = all?.[todayKey];
+
+                if (!todayEntry) {
+                    console.log(`📅 No scheduled entry for today (${todayKey}) — using daily config`);
+                    return null;
+                }
+
+                console.log(`✅ Scheduled times found for today (${todayKey})`);
+                return todayEntry;
+            } catch (error) {
+                console.error('❌ Error fetching scheduled times (falling back to daily config):', error);
+                return null;
+            }
+        }
+
         // Load all data
         async function loadPrayerData() {
             try {
@@ -648,6 +689,9 @@
                     return false;
                 }
                 
+                // Fetch scheduled times for today (① priority — overrides dailyConfig when set)
+                const scheduled = await fetchScheduledTimesForToday();
+
                 // Fetch fallback rules
                 const fallbackRules = await fetchFallbackRules();
                 console.log('📋 Fallback rules loaded:', fallbackRules);
@@ -669,23 +713,40 @@
                     return `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
                 };
                 
-                // Apply smart fallback logic for 5 main prayers using database rules
+                // MAT/MIT Priority:
+                //   ① scheduled[prayer].mat/mit  — per-date override (if set)
+                //   ② dailyConfig.mat/mit[prayer] — default manual times
+                //   ③ APT + fallbackRules offset  — auto fallback
                 const processPrayerTimes = (prayer) => {
                     const apt = aladhanTimes[prayer];
-                    let mat = dailyConfig.mat[prayer];
-                    let mit = dailyConfig.mit[prayer];
                     const rules = fallbackRules[prayer];
-                    
-                    // If MAT is missing or 00:00, use APT + matOffset from database
-                    if (!mat || mat === '00:00' || mat === '--:--') {
+
+                    // Resolve MAT
+                    const schedMat = scheduled?.[prayer]?.mat;
+                    const dailyMat = dailyConfig.mat[prayer];
+                    let mat;
+                    if (isValidTime(schedMat)) {
+                        mat = schedMat;
+                        console.log(`📅 ${prayer}: MAT from scheduledTimes (${mat})`);
+                    } else if (isValidTime(dailyMat)) {
+                        mat = dailyMat;
+                    } else {
                         mat = addMinutes(apt, rules.matOffset);
-                        console.log(`ℹ️ ${prayer}: MAT missing, using APT + ${rules.matOffset} mins (${mat})`);
+                        console.log(`ℹ️ ${prayer}: MAT fallback APT + ${rules.matOffset} mins (${mat})`);
                     }
-                    
-                    // If MIT is missing or 00:00, use MAT + mitOffset from database
-                    if (!mit || mit === '00:00' || mit === '--:--') {
+
+                    // Resolve MIT
+                    const schedMit = scheduled?.[prayer]?.mit;
+                    const dailyMit = dailyConfig.mit[prayer];
+                    let mit;
+                    if (isValidTime(schedMit)) {
+                        mit = schedMit;
+                        console.log(`📅 ${prayer}: MIT from scheduledTimes (${mit})`);
+                    } else if (isValidTime(dailyMit)) {
+                        mit = dailyMit;
+                    } else {
                         mit = addMinutes(mat, rules.mitOffset);
-                        console.log(`ℹ️ ${prayer}: MIT missing, using MAT + ${rules.mitOffset} mins (${mit})`);
+                        console.log(`ℹ️ ${prayer}: MIT fallback MAT + ${rules.mitOffset} mins (${mit})`);
                     }
                     
                     return { apt, mat, mit };
