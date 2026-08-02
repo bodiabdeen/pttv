@@ -806,6 +806,7 @@
             maghrib: { en: 'Maghrib', ar: 'المغرب' },
             isha: { en: 'Isha', ar: 'العشاء' },
             jumaa: { en: "Jumu'ah", ar: 'الجمعة' },
+            jumaa2: { en: "Jumu'ah 2", ar: 'الجمعة ٢' },
             taraweeh: { en: 'Taraweeh', ar: 'التراويح' },
             eidFitr: { en: 'Eid al-Fitr', ar: 'عيد الفطر' },
             eidAdha: { en: 'Eid al-Adha', ar: 'عيد الأضحى' }
@@ -823,6 +824,7 @@
             },
             specialPrayers: {
                 jumaa: { adhan: '', iqama: '' },
+                jumaa2: { adhan: '', iqama: '' },
                 taraweeh: { time: '' },
                 eidFitr: { prayer1: { time: '' }, prayer2: { time: '' } },
                 eidAdha: { prayer1: { time: '' }, prayer2: { time: '' } }
@@ -898,6 +900,10 @@
                             jumaa: data.jumaa ? {
                                 adhan: data.jumaa.adhan_khutba || '',
                                 iqama: data.jumaa.iqama || '',
+                            } : undefined,
+                            jumaa2: data.jumaa2 ? {
+                                adhan: data.jumaa2.adhan_khutba || '',
+                                iqama: data.jumaa2.iqama || '',
                             } : undefined,
                             taraweeh: data.taraweeh?.time ? {
                                 time: data.taraweeh.time
@@ -1328,6 +1334,50 @@
                 }
             }
 
+            // Add 2nd Jumu'ah (only on Fridays, optional — new app only field)
+            if (isFriday && prayerData.specialPrayers.jumaa2) {
+                const adhan2 = timeToMinutes(prayerData.specialPrayers.jumaa2.adhan);
+                const iqama2 = timeToMinutes(prayerData.specialPrayers.jumaa2.iqama);
+
+                if (adhan2 !== null && iqama2 !== null) {
+                    const adhan2Duration = iqama2 - adhan2;
+                    events.push({
+                        prayer: "Jumu'ah 2",
+                        type: 'ADHAN',
+                        time: prayerData.specialPrayers.jumaa2.adhan,
+                        minutes: adhan2,
+                        displayName: `${PRAYER_NAMES.jumaa2.en} - Adhan/Khutba`,
+                        displayNameAr: `${PRAYER_NAMES.jumaa2.ar} - أذان/خطبة`,
+                        isSpecial: true,
+                        durationMinutes: adhan2Duration > 0 ? adhan2Duration : 15
+                    });
+                } else if (adhan2 !== null) {
+                    events.push({
+                        prayer: "Jumu'ah 2",
+                        type: 'ADHAN',
+                        time: prayerData.specialPrayers.jumaa2.adhan,
+                        minutes: adhan2,
+                        displayName: `${PRAYER_NAMES.jumaa2.en} - Adhan/Khutba`,
+                        displayNameAr: `${PRAYER_NAMES.jumaa2.ar} - أذان/خطبة`,
+                        isSpecial: true,
+                        durationMinutes: 15
+                    });
+                }
+
+                if (iqama2 !== null) {
+                    events.push({
+                        prayer: "Jumu'ah 2",
+                        type: 'IQAMA',
+                        time: prayerData.specialPrayers.jumaa2.iqama,
+                        minutes: iqama2,
+                        displayName: `${PRAYER_NAMES.jumaa2.en} - Iqama`,
+                        displayNameAr: `${PRAYER_NAMES.jumaa2.ar} - إقامة`,
+                        isSpecial: true,
+                        durationMinutes: 15
+                    });
+                }
+            }
+
             // Add Taraweeh — event display only from 30 Sha'ban through 29 Ramadan
             if (prayerData.specialPrayers.taraweeh && prayerData.specialPrayers.taraweeh.time) {
                 let showTaraweehEvent = false;
@@ -1559,11 +1609,26 @@
                 const hasData = j.adhan || j.iqama;
                 const isNext = nextEvent && nextEvent.prayer === "Jumu'ah";
                 html += `
-                    <div class="special-card ${isNext ? 'next-prayer' : ''}${!hasData ? ' disabled-card' : ''}" data-prayer="jumaa">
+                    <div class="special-card ${isNext ? 'next-prayer' : ''}${!hasData ? ' disabled-card' : ''}" data-prayer="jumaa1">
                         <div class="special-name">${PRAYER_NAMES.jumaa.en} <span style="opacity:0.5;font-weight:400;font-size:0.85em;">(${PRAYER_NAMES.jumaa.ar})</span></div>
                         <div class="special-time-value">${hasData ? `Adhan/Khutba: ${j.adhan || '--:--'} / Iqama: ${j.iqama || '--:--'}` : 'Not today'}</div>
                     </div>
                 `;
+            }
+
+            // --- 2nd Jumaa (only rendered when set — new app only field) ---
+            if (prayerData.specialPrayers && prayerData.specialPrayers.jumaa2) {
+                const j2 = prayerData.specialPrayers.jumaa2;
+                const hasData2 = j2.adhan || j2.iqama;
+                if (hasData2) {
+                    const isNext2 = nextEvent && nextEvent.prayer === "Jumu'ah 2";
+                    html += `
+                        <div class="special-card ${isNext2 ? 'next-prayer' : ''}" data-prayer="jumaa2">
+                            <div class="special-name">${PRAYER_NAMES.jumaa2.en} <span style="opacity:0.5;font-weight:400;font-size:0.85em;">(${PRAYER_NAMES.jumaa2.ar})</span></div>
+                            <div class="special-time-value">Adhan/Khutba: ${j2.adhan || '--:--'} / Iqama: ${j2.iqama || '--:--'}</div>
+                        </div>
+                    `;
+                }
             }
 
             // --- Taraweeh (always shown) ---

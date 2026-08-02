@@ -408,7 +408,8 @@
             asr: { en: 'Asr', ar: 'العصر' },
             maghrib: { en: 'Maghrib', ar: 'المغرب' },
             isha: { en: 'Isha', ar: 'العشاء' },
-            jumaa: { en: 'Jumaa', ar: 'الجمعة' },
+            jumaa: { en: "Jumu'ah", ar: 'الجمعة' },
+            jumaa2: { en: "Jumu'ah 2", ar: 'الجمعة ٢' },
             taraweeh: { en: 'Taraweeh', ar: 'التراويح' },
             eidFitr: { en: 'Eid al-Fitr', ar: 'عيد الفطر' },
             eidAdha: { en: 'Eid al-Adha', ar: 'عيد الأضحى' }
@@ -426,6 +427,7 @@
             },
             specialPrayers: {
                 jumaa: { adhan: '', iqama: '' },
+                jumaa2: { adhan: '', iqama: '' },
                 taraweeh: { time: '' },
                 eidFitr: { prayer1: { time: '' }, prayer2: { time: '' } },
                 eidAdha: { prayer1: { time: '' }, prayer2: { time: '' } }
@@ -504,6 +506,10 @@
                             jumaa: data.jumaa ? {
                                 adhan: data.jumaa.adhan_khutba || '',
                                 iqama: data.jumaa.iqama || '',
+                            } : undefined,
+                            jumaa2: data.jumaa2 ? {
+                                adhan: data.jumaa2.adhan_khutba || '',
+                                iqama: data.jumaa2.iqama || '',
                             } : undefined,
                             taraweeh: data.taraweeh?.time ? {
                                 time: data.taraweeh.time
@@ -823,7 +829,7 @@
             let html = '';
             let hasSpecialPrayers = false;
 
-            // Jumaa - show always if it has values
+            // Jumu'ah - show always if it has values
             if (special.jumaa && special.jumaa.adhan && special.jumaa.iqama) {
                 hasSpecialPrayers = true;
                 html += `
@@ -833,6 +839,20 @@
                             <div class="special-name-ar">${PRAYER_NAMES.jumaa.ar}</div>
                         </div>
                         <div class="special-time">Adhan: ${special.jumaa.adhan} / Iqama: ${special.jumaa.iqama}</div>
+                    </div>
+                `;
+            }
+
+            // 2nd Jumu'ah (only rendered when set — new app only field)
+            if (special.jumaa2 && special.jumaa2.adhan && special.jumaa2.iqama) {
+                hasSpecialPrayers = true;
+                html += `
+                    <div class="special-card">
+                        <div class="special-name-wrapper">
+                            <div class="special-name-en">${PRAYER_NAMES.jumaa2.en}</div>
+                            <div class="special-name-ar">${PRAYER_NAMES.jumaa2.ar}</div>
+                        </div>
+                        <div class="special-time">Adhan: ${special.jumaa2.adhan} / Iqama: ${special.jumaa2.iqama}</div>
                     </div>
                 `;
             }
