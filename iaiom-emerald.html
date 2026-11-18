@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IOM Prayer Times Widget</title>
+    <title>IOM Prayer Times Widget (Emerald)</title>
+    <meta name="version" content="2.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400..800&display=swap">
     <style>
         * {
             margin: 0;
@@ -345,6 +349,47 @@
             *, *::before, *::after { animation: none !important; transition: none !important; }
         }
     </style>
+    <style>
+        /* ===== v2.0 Emerald look (this file only; iaiom.html keeps the Classic look) ===== */
+        .widget-container { font-family: 'Plus Jakarta Sans', 'Segoe UI', Arial, sans-serif; border-radius: 22px; overflow: hidden; box-shadow: 0 24px 48px -28px rgba(10, 47, 53, 0.55); }
+        .widget-header { background: linear-gradient(135deg, #0A2F35 0%, #0F4A47 55%, #00A86B 100%); }
+        .widget-title { font-weight: 800; }
+        .hijri-date { color: #7FE0B5; font-style: normal; font-weight: 600; }
+        .em-next { display: flex; align-items: center; gap: 14px; margin: 16px auto 6px; padding: 8px 18px 8px 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.10); width: fit-content; color: #FFFFFF; }
+        .em-ring-s { width: 56px; height: 56px; flex: none; }
+        .em-ring-s .tr { fill: none; stroke: rgba(255, 255, 255, 0.22); stroke-width: 9; }
+        .em-ring-s .pr { fill: none; stroke: #7FE0B5; stroke-width: 9; stroke-linecap: round; transition: stroke-dasharray 0.8s ease; }
+        .em-next-in { display: grid; text-align: left; line-height: 1.25; }
+        .em-next-in small { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #7FE0B5; font-weight: 700; }
+        #emNextName { font-size: 19px; font-weight: 800; }
+        #emNextWhen { font-size: 13px; opacity: 0.9; }
+        .section-title { font-weight: 800; color: #0A2F35; }
+        .em-cols { display: grid; grid-template-columns: 1.45fr 3fr; padding: 0 16px; margin: 4px 0 6px; }
+        .em-cols > div { display: grid; grid-template-columns: repeat(3, 1fr); }
+        .em-cols span { text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #5E7276; }
+        .prayers-grid { gap: 8px; }
+        .prayer-card { display: grid; grid-template-columns: 1.45fr 3fr; align-items: center; padding: 11px 16px; border-radius: 16px; border: 1px solid #DCE6E3; background: #F7FAF9; box-shadow: none; }
+        .prayer-card:hover { transform: none; box-shadow: 0 6px 18px -12px rgba(10, 47, 53, 0.5); }
+        .prayer-card.next-prayer { background: #E3F5EC; border: 1.5px solid #00A86B; }
+        .prayer-header { display: flex; align-items: baseline; gap: 8px; margin: 0; padding: 0; border: 0; }
+        .prayer-name-en { font-size: 17px; font-weight: 700; color: #10262A; }
+        .prayer-name-ar { font-size: 15px; color: #5E7276; }
+        .prayer-times-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+        .time-box { background: transparent; border: 0; padding: 0; box-shadow: none; text-align: center; }
+        .time-label { display: none; }
+        .time-value { font-size: 17px; font-weight: 600; color: #10262A; font-variant-numeric: tabular-nums; }
+        .prayer-card.next-prayer .time-value { color: #0A2F35; font-weight: 800; }
+        .special-card { border-radius: 16px; border: 1px solid #DCE6E3; background: #F7FAF9; }
+        .special-time { color: #00875A; }
+        .widget-footer { background: #F3F6F5; }
+        @media (max-width: 520px) {
+            .em-cols, .prayer-card { grid-template-columns: 1.15fr 3fr; }
+            .prayer-header { flex-direction: column; gap: 0; }
+            .prayer-name-en, .time-value { font-size: 15px; }
+            .prayer-card { padding: 10px 12px; }
+        }
+        @media (prefers-reduced-motion: reduce) { .em-ring-s .pr { transition: none; } }
+    </style>
 </head>
 <body>
     <!-- Loading Screen -->
@@ -364,6 +409,12 @@
             <div class="date-container">
                 <div class="gregorian-date" id="widgetDate">Loading...</div>
                 <div class="hijri-date" id="hijriDate">Loading...</div>
+            </div>
+
+            <!-- v2.0 Emerald: the next prayer, with a ring that fills until it begins -->
+            <div class="em-next" id="emNext" aria-live="off">
+                <svg class="em-ring-s" viewBox="0 0 100 100" aria-hidden="true"><circle class="tr" cx="50" cy="50" r="42"/><circle class="pr" id="emRing" cx="50" cy="50" r="42" pathLength="100" stroke-dasharray="0 100" transform="rotate(-90 50 50)"/></svg>
+                <div class="em-next-in"><small>Next prayer</small><span id="emNextName">...</span><span id="emNextWhen"></span></div>
             </div>
             
             <!-- Store Icons -->
@@ -387,6 +438,7 @@
                     <button type="button" class="day-tab" data-day="tomorrow" role="tab" aria-selected="false">Tomorrow</button>
                 </div>
             </div>
+            <div class="em-cols" aria-hidden="true"><span></span><div><span>Begins</span><span>Adhan</span><span>Iqama</span></div></div>
             <div class="prayers-grid" id="prayersGrid">
                 <!-- Prayer cards will be inserted here -->
             </div>
@@ -1016,6 +1068,42 @@
                 `;
             }).join('');
             setHtmlIfChanged(container, html, 'prayers');
+            updateEmeraldNext();
+        }
+
+        // v2.0 Emerald: next prayer and a ring from the previous prayer's start to the next one
+        function emMinutes(t) {
+            if (!t || !/^\d{1,2}:\d{2}$/.test(t)) return null;
+            const [h, m] = t.split(':').map(Number);
+            return h * 60 + m;
+        }
+        function updateEmeraldNext() {
+            if (!prayerData || !prayerData.prayers || !document.getElementById('emNext')) return;
+            const now = new Date();
+            const nowMinutes = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+            const starts = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha']
+                .map(k => ({ k, m: emMinutes(prayerData.prayers[k] && prayerData.prayers[k].apt) }))
+                .filter(x => x.m !== null);
+            if (!starts.length) return;
+            let next = starts.find(x => x.m > nowMinutes);
+            let prev;
+            let nextTime;
+            if (next) {
+                const before = starts.filter(x => x.m <= nowMinutes);
+                prev = before.length ? before[before.length - 1].m : starts[starts.length - 1].m - 1440;
+                nextTime = prayerData.prayers[next.k].apt;
+            } else {
+                const tomorrowFajr = prayerData.tomorrow && prayerData.tomorrow.prayers && prayerData.tomorrow.prayers.fajr ? prayerData.tomorrow.prayers.fajr.apt : prayerData.prayers.fajr.apt;
+                next = { k: 'fajr', m: (emMinutes(tomorrowFajr) ?? starts[0].m) + 1440 };
+                prev = starts[starts.length - 1].m;
+                nextTime = tomorrowFajr;
+            }
+            const done = Math.min(1, Math.max(0, (nowMinutes - prev) / (next.m - prev)));
+            const left = Math.max(0, Math.ceil(next.m - nowMinutes));
+            document.getElementById('emRing').setAttribute('stroke-dasharray', `${(done * 100).toFixed(1)} 100`);
+            document.getElementById('emNextName').textContent = PRAYER_NAMES[next.k].en;
+            const inText = left >= 60 ? `in ${Math.floor(left / 60)} h ${String(left % 60).padStart(2, '0')} min` : `in ${left} min`;
+            document.getElementById('emNextWhen').textContent = `${nextTime || ''}${next.m >= 1440 ? ' tomorrow' : ''} · ${inText}`;
         }
 
         // Render special prayers
