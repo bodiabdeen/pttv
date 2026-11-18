@@ -301,6 +301,16 @@
             }
         }
 
+        /* ===== v2: Today | Tomorrow tabs ===== */
+        .daily-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 15px; }
+        .daily-header .section-title { margin-bottom: 0; }
+        .section-title.tomorrow { color: #B7791F; }
+        .day-tabs { display: inline-flex; gap: 4px; padding: 4px; background: #F1F3F5; border-radius: 999px; }
+        .day-tab { border: 0; background: transparent; color: #495057; font: inherit; font-size: 14px; font-weight: 600; padding: 6px 14px; border-radius: 999px; cursor: pointer; transition: background-color 0.25s ease, color 0.25s ease; }
+        .day-tab:hover { color: #00A86B; }
+        .day-tab.active { background: #00A86B; color: #FFFFFF; }
+        .day-tab:focus-visible { outline: 2px solid #00A86B; outline-offset: 2px; }
+
         /* ===== v2: next prayer highlight and gentle animations =====
            Calm on purpose, and switched off when the visitor's device asks for reduced motion. */
         .prayer-card.next-prayer,
@@ -370,7 +380,13 @@
         <!-- Content -->
         <div class="widget-content">
             <!-- Daily Prayers -->
-            <div class="section-title">Daily Prayers</div>
+            <div class="daily-header">
+                <div class="section-title" id="dailyTitle">Daily Prayers</div>
+                <div class="day-tabs hidden" id="dayTabs" role="tablist" aria-label="Choose the day">
+                    <button type="button" class="day-tab active" data-day="today" role="tab" aria-selected="true">Today</button>
+                    <button type="button" class="day-tab" data-day="tomorrow" role="tab" aria-selected="false">Tomorrow</button>
+                </div>
+            </div>
             <div class="prayers-grid" id="prayersGrid">
                 <!-- Prayer cards will be inserted here -->
             </div>
@@ -718,9 +734,9 @@
         }
 
         // Fetch prayer times from Aladhan API
-        async function fetchPrayerTimesFromAladhan(apiConfig) {
+        async function fetchPrayerTimesFromAladhan(apiConfig, date) {
             try {
-                const today = new Date();
+                const today = date || new Date(); // v2: any date, tomorrow too
                 const dateStr = `${String(today.getDate()).padStart(2, '0')}-${String(today.getMonth() + 1).padStart(2, '0')}-${today.getFullYear()}`;
                 
                 const url = `https://api.aladhan.com/v1/timings/${dateStr}?latitude=${apiConfig.latitude}&longitude=${apiConfig.longitude}&method=${apiConfig.method}&school=0`;
@@ -735,7 +751,7 @@
                     const offsets = apiConfig.offsetMinutes;
                     
                     // Store Hijri date information
-                    if (data.data.date && data.data.date.hijri) {
+                    if (!date && data.data.date && data.data.date.hijri) { // v2: only today's sets the Hijri line
                         hijriDateData = data.data.date.hijri;
                         console.log('✅ Hijri date extracted:', hijriDateData);
                     }
@@ -781,7 +797,7 @@
 
         // Fetch per-date scheduled times from Firebase (① highest priority)
         // Non-fatal: returns null if document missing or no entry for today
-        async function fetchScheduledTimesForToday() {
+        async function fetchScheduledTimesForToday(dateKey) {
             try {
                 const docRef = doc(db, FIREBASE_CONFIG.COLLECTION, FIREBASE_CONFIG.DOCUMENTS.SCHEDULED_TIMES);
                 const docSnap = await getDoc(docRef);
@@ -792,7 +808,7 @@
                 }
 
                 const all = docSnap.data();
-                const todayKey = getTodayKey();
+                const todayKey = dateKey || getTodayKey(); // v2: any date, tomorrow too
                 const todayEntry = all?.[todayKey];
 
                 if (!todayEntry) {
@@ -859,12 +875,12 @@
                 //   ① scheduled[prayer].mat/mit  — per-date override (if set)
                 //   ② dailyConfig.mat/mit[prayer] — default manual times
                 //   ③ APT + fallbackRules offset  — auto fallback
-                const processPrayerTimes = (prayer) => {
-                    const apt = aladhanTimes[prayer];
+                const processPrayerTimes = (prayer, dayTimes = aladhanTimes, dayScheduled = scheduled) => {
+                    const apt = dayTimes[prayer];
                     const rules = fallbackRules[prayer];
 
                     // Resolve MAT
-                    const schedMat = scheduled?.[prayer]?.mat;
+                    const schedMat = dayScheduled?.[prayer]?.mat;
                     const dailyMat = dailyConfig.mat[prayer];
                     let mat;
                     if (isValidTime(schedMat)) {
@@ -878,7 +894,7 @@
                     }
 
                     // Resolve MIT
-                    const schedMit = scheduled?.[prayer]?.mit;
+                    const schedMit = dayScheduled?.[prayer]?.mit;
                     const dailyMit = dailyConfig.mit[prayer];
                     let mit;
                     if (isValidTime(schedMit)) {
@@ -894,6 +910,34 @@
                     return { apt, mat, mit };
                 };
                 
+                // v2: tomorrow's times for the Tomorrow tab. Never fatal.
+                let tomorrow = null;
+                try {
+                    const nowDate = new Date();
+                    const tomorrowDate = new Date(nowDate.getFullYear(), nowDate.getMonth(), nowDate.getDate() + 1);
+                    const tomorrowKey = spDateKey(tomorrowDate);
+                    const [tomorrowTimes, tomorrowScheduled] = await Promise.all([
+                        fetchPrayerTimesFromAladhan(apiConfig, tomorrowDate),
+                        fetchScheduledTimesForToday(tomorrowKey),
+                    ]);
+                    if (tomorrowTimes) {
+                        tomorrow = {
+                            dateKey: tomorrowKey,
+                            label: tomorrowDate.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }),
+                            prayers: {
+                                fajr: processPrayerTimes('fajr', tomorrowTimes, tomorrowScheduled),
+                                sunrise: { apt: tomorrowTimes.sunrise, mat: '--:--', mit: '--:--' },
+                                dhuhr: processPrayerTimes('dhuhr', tomorrowTimes, tomorrowScheduled),
+                                asr: processPrayerTimes('asr', tomorrowTimes, tomorrowScheduled),
+                                maghrib: processPrayerTimes('maghrib', tomorrowTimes, tomorrowScheduled),
+                                isha: processPrayerTimes('isha', tomorrowTimes, tomorrowScheduled)
+                            }
+                        };
+                    }
+                } catch (error) {
+                    console.warn("⚠️ Tomorrow's times not available:", error);
+                }
+
                 // Combine all data with smart fallbacks
                 prayerData = {
                     prayers: {
@@ -905,6 +949,7 @@
                         isha: processPrayerTimes('isha')
                     },
                     specialPrayers: dailyConfig.specialPrayers,
+                    tomorrow, // v2
                     config: {
                         location: 'Isle of Man',
                         method: apiConfig.methodName,
@@ -925,9 +970,26 @@
         function renderPrayerTimes() {
             const container = document.getElementById('prayersGrid');
             
-            const nextKey = getNextPrayerKey(); // v2: highlight the next prayer
+            // v2: Today | Tomorrow tabs
+            const showTomorrow = selectedDay === 'tomorrow' && !!prayerData.tomorrow;
+            const shownPrayers = showTomorrow ? prayerData.tomorrow.prayers : prayerData.prayers;
+            const nextKey = showTomorrow ? null : getNextPrayerKey(); // v2: highlight the next prayer (today only)
+            const title = document.getElementById('dailyTitle');
+            if (title) {
+                title.textContent = showTomorrow ? `Tomorrow · ${prayerData.tomorrow.label}` : 'Daily Prayers';
+                title.classList.toggle('tomorrow', showTomorrow);
+            }
+            const tabs = document.getElementById('dayTabs');
+            if (tabs) {
+                tabs.classList.toggle('hidden', !prayerData.tomorrow);
+                tabs.querySelectorAll('.day-tab').forEach(tab => {
+                    const active = tab.dataset.day === (showTomorrow ? 'tomorrow' : 'today');
+                    tab.classList.toggle('active', active);
+                    tab.setAttribute('aria-selected', String(active));
+                });
+            }
             const html = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'].map(prayer => {
-                const times = prayerData.prayers[prayer];
+                const times = shownPrayers[prayer];
                 const names = PRAYER_NAMES[prayer];
                 
                 return `
@@ -1173,10 +1235,24 @@
             const scheduleMidnightRefresh = () => {
                 const now = new Date();
                 const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 30);
-                setTimeout(async () => { await refresh(); scheduleMidnightRefresh(); }, next - now);
+                setTimeout(async () => { selectedDay = 'today'; await refresh(); scheduleMidnightRefresh(); }, next - now);
             };
             scheduleMidnightRefresh();
         }
+
+        // v2: Today | Tomorrow tabs
+        let selectedDay = 'today';
+        document.getElementById('dayTabs')?.addEventListener('click', (event) => {
+            const tab = event.target.closest('.day-tab');
+            if (!tab || tab.dataset.day === selectedDay) return;
+            selectedDay = tab.dataset.day;
+            const grid = document.getElementById('prayersGrid');
+            grid.classList.remove('animate-in');
+            void grid.offsetWidth; // replay the gentle entrance
+            grid.classList.add('animate-in');
+            setTimeout(() => grid.classList.remove('animate-in'), 900);
+            renderPrayerTimes();
+        });
 
         // Start the widget
         window.addEventListener('DOMContentLoaded', () => {

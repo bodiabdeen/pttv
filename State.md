@@ -15,6 +15,7 @@ Branch `pttv/v1.6`, created on 18 November 2026 from `pttv/v1.5`. Nothing has be
   * English text no longer uses the Arabic font: the old selector `*[class*="ar"]` matched any class containing "ar" (card, large, bar). Arabic uses Arabic Typesetting where installed, otherwise Noto Naskh Arabic from Google Fonts.
 * **Security**: every Firestore value is HTML-escaped before display.
 * **Gentle animations**: cards fade up on first load, the next prayer's border breathes slowly, the countdown takes a warm tint in its last five minutes, the normal and event screens crossfade, and a newly added special prayer fades in. All are switched off when the device asks for reduced motion.
+* **Tomorrow's times**: once the day's last event has passed (normally Isha's iqama), the list switches to tomorrow's times under the amber title "Tomorrow · Thu 19 Nov", and the countdown runs to tomorrow's first event. Just after midnight it goes back to "Daily Prayers". If tomorrow's times cannot be loaded, the page behaves as before.
 
 ### `iaiom-v2.html` (review copy of the website widget)
 
@@ -22,6 +23,7 @@ Branch `pttv/v1.6`, created on 18 November 2026 from `pttv/v1.5`. Nothing has be
 * The next prayer is highlighted, with the same slow breathing border.
 * Refreshes every 30 minutes and just after midnight, so a page left open stays correct.
 * HTML escaping, the same gentle entrance animation, and the reduced-motion switch.
+* **Today | Tomorrow switch** beside the Daily Prayers title. Tomorrow shows the next day's times under "Tomorrow · Thu 19 Nov", without the next prayer highlight. The page returns to Today just after midnight. The switch stays hidden if tomorrow's times cannot be loaded.
 
 Both pages: `?emulator` on localhost uses the local Firebase emulators and shows an "EMULATOR" badge.
 
@@ -30,6 +32,7 @@ Both pages: `?emulator` on localhost uses the local Firebase emulators and shows
 * End to end in headless Edge against the local emulators: special prayers appear, update live, hide when they should, injected markup is shown as text, fonts and highlight are correct, no script errors.
 * Against live data (read only): both v2 pages load with no errors and show the same special prayers as the live pages, because no admin-created ones exist yet.
 * Screenshots checked at 1920 by 1080 and 1366 by 768.
+* Tomorrow, with the page clock moved (emulator and live data): at 15:00 the TV shows today; at 21:00 it shows "Tomorrow · Thu 19 Nov" with Thursday's times (Fajr 05:44, Maghrib 16:14) and counts down to Fajr. The widget's switch shows Thursday's times and switches back to exactly the same Today list. No script errors.
 
 ## To publish (owner)
 
