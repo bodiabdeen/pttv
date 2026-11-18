@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IOM Prayer Times Widget</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background-color: transparent;
+            color: #1E1E1E;
+            padding: 20px;
+        }
+
+        .widget-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #FFFFFF;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* Header */
+        .widget-header {
+            background: linear-gradient(135deg, #0A2F35 0%, #00A86B 100%);
+            color: #FFFFFF;
+            padding: 25px 30px;
+            text-align: center;
+        }
+
+        .widget-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .widget-subtitle {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .widget-date {
+            font-size: 15px;
+            margin-top: 10px;
+            opacity: 0.95;
+        }
+
+        .date-container {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .gregorian-date, .hijri-date {
+            font-size: 15px;
+            opacity: 0.95;
+        }
+
+        .hijri-date {
+            font-size: 14px;
+            opacity: 0.85;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .gregorian-date, .hijri-date {
+                font-size: 13px;
+            }
+            
+            .hijri-date {
+                font-size: 12px;
+            }
+        }
+
+        /* Store Icons Section */
+        .store-section {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .store-link {
+            display: inline-block;
+            transition: transform 0.2s ease;
+            text-decoration: none;
+        }
+
+        .store-link:hover {
+            transform: scale(1.05);
+        }
+
+        .store-icon {
+            height: 50px;
+            width: auto;
+        }
+
+        /* Content */
+        .widget-content {
+            padding: 30px;
+        }
+
+        /* Section Title */
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0A2F35;
+            margin-bottom: 15px;
+            border-bottom: 3px solid #00A86B;
+            padding-bottom: 8px;
+        }
+
+        /* Prayer Grid */
+        .prayers-grid {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .prayer-card {
+            background-color: #F8F9FA;
+            border: 2px solid #E9ECEF;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .prayer-card:hover {
+            border-color: #00A86B;
+            box-shadow: 0 4px 12px rgba(0, 168, 107, 0.15);
+        }
+
+        .prayer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .prayer-name-en {
+            font-size: 22px;
+            font-weight: 700;
+            color: #0A2F35;
+        }
+
+        .prayer-name-ar {
+            font-size: 18px;
+            color: #6C757D;
+            font-weight: 600;
+        }
+
+        .prayer-times-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .time-box {
+            background-color: #FFFFFF;
+            border: 1px solid #DEE2E6;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .time-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #6C757D;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .time-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0A2F35;
+        }
+
+        /* Special Prayers */
+        .special-prayers-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .special-card {
+            background-color: #F8F9FA;
+            border: 2px solid #E9ECEF;
+            border-radius: 10px;
+            padding: 18px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .special-card:hover {
+            border-color: #00A86B;
+            box-shadow: 0 4px 12px rgba(0, 168, 107, 0.15);
+        }
+
+        .special-name-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .special-name-en {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0A2F35;
+        }
+
+        .special-name-ar {
+            font-size: 14px;
+            color: #6C757D;
+            font-weight: 600;
+        }
+
+        .special-time {
+            font-size: 18px;
+            font-weight: 700;
+            color: #00A86B;
+        }
+
+        /* Footer */
+        .widget-footer {
+            background-color: #F8F9FA;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 15px;
+            border-top: 1px solid #E9ECEF;
+        }
+
+        .footer-item {
+            text-align: center;
+        }
+
+        .footer-label {
+            font-size: 11px;
+            color: #6C757D;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .footer-value {
+            font-size: 13px;
+            color: #0A2F35;
+            font-weight: 600;
+        }
+
+        /* Loading State */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+            font-size: 24px;
+            font-weight: 700;
+            color: #00A86B;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .widget-content {
+                padding: 20px;
+            }
+
+            .prayer-times-row {
+                grid-template-columns: 1fr;
+            }
+
+            .widget-title {
+                font-size: 24px;
+            }
+
+            .prayer-name-en {
+                font-size: 18px;
+            }
+
+            .time-value {
+                font-size: 18px;
+            }
+        }
+
+        /* ===== v2: next prayer highlight and gentle animations =====
+           Calm on purpose, and switched off when the visitor's device asks for reduced motion. */
+        .prayer-card.next-prayer,
+        .special-card.next-prayer {
+            border-color: #00A86B;
+            background-color: rgba(0, 168, 107, 0.06);
+            animation: breathe 4s ease-in-out infinite;
+        }
+        @keyframes breathe {
+            0%, 100% { box-shadow: 0 2px 6px rgba(0, 168, 107, 0.12); }
+            50%      { box-shadow: 0 0 18px rgba(0, 168, 107, 0.35); }
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: none; }
+        }
+        .widget-container.widget-enter { animation: fadeUp 0.6s ease-out both; }
+        .animate-in > * { animation: fadeUp 0.6s ease-out both; }
+        .animate-in > *:nth-child(2) { animation-delay: 0.06s; }
+        .animate-in > *:nth-child(3) { animation-delay: 0.12s; }
+        .animate-in > *:nth-child(4) { animation-delay: 0.18s; }
+        .animate-in > *:nth-child(5) { animation-delay: 0.24s; }
+        .animate-in > *:nth-child(6) { animation-delay: 0.30s; }
+        .animate-in > *:nth-child(7) { animation-delay: 0.36s; }
+        .animate-in > *:nth-child(8) { animation-delay: 0.42s; }
+        .emulator-badge {
+            position: fixed; right: 10px; bottom: 10px; z-index: 50;
+            background: #FFA500; color: #111; font-weight: 800; font-size: 12px;
+            padding: 5px 10px; border-radius: 6px;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation: none !important; transition: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading" class="loading">
+        🕌 Loading Prayer Times...
+    </div>
+
+    <!-- v2: shown only in local testing (?emulator on localhost) -->
+    <div id="emulatorBadge" class="emulator-badge hidden">EMULATOR · local test data, not live</div>
+
+    <!-- Widget -->
+    <div id="widget" class="widget-container hidden">
+        <!-- Header -->
+        <div class="widget-header">
+            <div class="widget-title">Isle of Man Islamic Centre</div>
+            <div class="widget-subtitle">Prayer Times</div>
+            <div class="date-container">
+                <div class="gregorian-date" id="widgetDate">Loading...</div>
+                <div class="hijri-date" id="hijriDate">Loading...</div>
+            </div>
+            
+            <!-- Store Icons -->
+            <div class="store-section">
+                <a href="https://play.google.com/store/apps/details?id=com.iomprayertimes" class="store-link" id="androidStoreLink" target="_blank" rel="noopener">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play" class="store-icon">
+                </a>
+                <a href="https://apps.apple.com/gb/app/iom-prayer-times/id6758450458" class="store-link" target="_blank" rel="noopener">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="Download on the App Store" class="store-icon">
+                </a>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="widget-content">
+            <!-- Daily Prayers -->
+            <div class="section-title">Daily Prayers</div>
+            <div class="prayers-grid" id="prayersGrid">
+                <!-- Prayer cards will be inserted here -->
+            </div>
+
+            <!-- Special Prayers -->
+            <div id="specialSection">
+                <div class="section-title">Special Prayers</div>
+                <div class="special-prayers-grid" id="specialPrayersGrid">
+                    <!-- Special prayer cards will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="widget-footer">
+            <div class="footer-item">
+                <div class="footer-label">Location</div>
+                <div class="footer-value" id="location">Loading...</div>
+            </div>
+            <div class="footer-item">
+                <div class="footer-label">Calculation Method</div>
+                <div class="footer-value" id="method">Loading...</div>
+            </div>
+            <div class="footer-item">
+                <div class="footer-label">Juristic School</div>
+                <div class="footer-value" id="school">Loading...</div>
+            </div>
+            <div class="footer-item">
+                <div class="footer-label">Offsets (mins)</div>
+                <div class="footer-value" id="offsets">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, doc, getDoc, connectFirestoreEmulator } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDQc-8A1Zkz4RnRt54rW4DdaA_v0rfLIBQ",
+            authDomain: "iompt-f5b68.firebaseapp.com",
+            projectId: "iompt-f5b68",
+            storageBucket: "iompt-f5b68.firebasestorage.app",
+            messagingSenderId: "111581192358",
+            appId: "1:111581192358:web:c9d7be70cc72d8e0ca5467",
+            measurementId: "G-TNN65XD7L2"
+        };
+
+        // Initialize Firebase
+        console.log('🔥 Initializing Firebase...');
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        console.log('✅ Firebase initialized');
+
+        // v2: local testing only. Active only on localhost AND with ?emulator in the URL.
+        const USE_EMULATOR = ['localhost', '127.0.0.1'].includes(location.hostname)
+            && new URLSearchParams(location.search).has('emulator');
+        if (USE_EMULATOR) {
+            connectFirestoreEmulator(db, '127.0.0.1', 8080);
+            document.getElementById('emulatorBadge').classList.remove('hidden');
+            console.warn('🧪 Using the local Firestore emulator (test data, not live)');
+        }
+
+        // v2: everything inserted as HTML is escaped first
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+            }[c]));
+        }
+
+        // v2: only touch the page when the content changed (keeps the gentle animations smooth)
+        const lastRenderedHtml = {};
+        function setHtmlIfChanged(container, html, key) {
+            if (lastRenderedHtml[key] === html) return false;
+            lastRenderedHtml[key] = html;
+            container.innerHTML = html;
+            return true;
+        }
+
+        // v2: which daily prayer is next (same rule as the app: the first start time still to come)
+        function getNextPrayerKey() {
+            const now = new Date();
+            const nowMinutes = now.getHours() * 60 + now.getMinutes();
+            const order = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha'];
+            for (const key of order) {
+                const t = prayerData.prayers[key]?.apt;
+                if (!t || !/^\d{1,2}:\d{2}$/.test(t)) continue;
+                const [h, m] = t.split(':').map(Number);
+                if (h * 60 + m > nowMinutes) return key;
+            }
+            return 'fajr'; // after Isha: tomorrow's Fajr
+        }
+
+        // ── v2: Special prayers created by the admin (Firestore: prayerTimes/specialPrayers) ──
+        // Each item: { id, name, date: 'YYYY-MM-DD', time: 'HH:MM', showFrom, hideAfter }
+        // (showFrom and hideAfter are 'YYYY-MM-DDTHH:MM' local time). Shown while showFrom <= now < hideAfter.
+        const SP_TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
+        const SP_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+        const SP_DATETIME_RE = /^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):[0-5]\d$/;
+        let customSpecials = [];
+
+        function spPad(n) { return String(n).padStart(2, '0'); }
+        function spDateKey(d) { return `${d.getFullYear()}-${spPad(d.getMonth() + 1)}-${spPad(d.getDate())}`; }
+        function spMinuteKey(d) { return `${spDateKey(d)}T${spPad(d.getHours())}:${spPad(d.getMinutes())}`; }
+        function spAddMinutes(dateKey, time, minutes) {
+            const [y, m, d] = dateKey.split('-').map(Number);
+            const [hh, mm] = time.split(':').map(Number);
+            return spMinuteKey(new Date(y, m - 1, d, hh, mm + minutes));
+        }
+        function parseSpecialPrayers(data) {
+            const list = data && Array.isArray(data.list) ? data.list : [];
+            return list.map(raw => {
+                if (!raw || typeof raw !== 'object') return null;
+                const name = typeof raw.name === 'string' ? raw.name.trim().slice(0, 60) : '';
+                const date = String(raw.date || '');
+                const time = String(raw.time || '');
+                if (!name || !SP_DATE_RE.test(date) || !SP_TIME_RE.test(time)) return null;
+                const showFrom = SP_DATETIME_RE.test(String(raw.showFrom || '')) ? raw.showFrom : '';
+                const hideAfter = SP_DATETIME_RE.test(String(raw.hideAfter || '')) ? raw.hideAfter : spAddMinutes(date, time, 60);
+                return { id: String(raw.id ?? `${date}T${time}`), name, date, time, showFrom, hideAfter };
+            }).filter(Boolean).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+        }
+        function isSpecialPrayerVisible(item, now) {
+            const key = spMinuteKey(now || new Date());
+            return (!item.showFrom || item.showFrom <= key) && key < item.hideAfter;
+        }
+        function formatSpecialWhen(item, now) {
+            const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+            if (item.date === spDateKey(now)) return `Today ${item.time}`;
+            if (item.date === spDateKey(tomorrow)) return `Tomorrow ${item.time}`;
+            const [y, m, d] = item.date.split('-').map(Number);
+            const day = new Date(y, m - 1, d).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+            return `${day} ${item.time}`;
+        }
+        // Returns the list, [] if the document does not exist, or null if it could not be read
+        async function fetchSpecialPrayers() {
+            try {
+                const snap = await getDoc(doc(db, FIREBASE_CONFIG.COLLECTION, 'specialPrayers'));
+                return snap.exists() ? parseSpecialPrayers(snap.data()) : [];
+            } catch (error) {
+                console.warn('⚠️ Special prayers not available:', error.code || error.message);
+                return null;
+            }
+        }
+
+        const FIREBASE_CONFIG = {
+            COLLECTION: 'prayerTimes',
+            DOCUMENTS: {
+                API_CONFIG:      'apiConfig',
+                DAILY_CONFIG:    'dailyConfig',
+                FALLBACK_RULES:  'fallbackRules',
+                SCHEDULED_TIMES: 'scheduledTimes',
+            }
+        };
+
+        // Prayer name translations
+        const PRAYER_NAMES = {
+            fajr: { en: 'Fajr', ar: 'الفجر' },
+            sunrise: { en: 'Sunrise', ar: 'الشروق' },
+            dhuhr: { en: 'Dhuhr', ar: 'الظهر' },
+            asr: { en: 'Asr', ar: 'العصر' },
+            maghrib: { en: 'Maghrib', ar: 'المغرب' },
+            isha: { en: 'Isha', ar: 'العشاء' },
+            jumaa: { en: "Jumu'ah", ar: 'الجمعة' },
+            jumaa2: { en: "Jumu'ah 2", ar: 'الجمعة ٢' },
+            taraweeh: { en: 'Taraweeh', ar: 'التراويح' },
+            eidFitr: { en: 'Eid al-Fitr', ar: 'عيد الفطر' },
+            eidAdha: { en: 'Eid al-Adha', ar: 'عيد الأضحى' }
+        };
+
+        // Global prayer data
+        let prayerData = {
+            prayers: {
+                fajr: { apt: '00:00', mat: '00:00', mit: '00:00' },
+                sunrise: { apt: '00:00', mat: '--:--', mit: '--:--' },
+                dhuhr: { apt: '00:00', mat: '00:00', mit: '00:00' },
+                asr: { apt: '00:00', mat: '00:00', mit: '00:00' },
+                maghrib: { apt: '00:00', mat: '00:00', mit: '00:00' },
+                isha: { apt: '00:00', mat: '00:00', mit: '00:00' }
+            },
+            specialPrayers: {
+                jumaa: { adhan: '', iqama: '' },
+                jumaa2: { adhan: '', iqama: '' },
+                taraweeh: { time: '' },
+                eidFitr: { prayer1: { time: '' }, prayer2: { time: '' } },
+                eidAdha: { prayer1: { time: '' }, prayer2: { time: '' } }
+            },
+            config: {
+                location: 'Isle of Man',
+                method: 'Loading...',
+                school: 'Loading...'
+            }
+        };
+
+        // Global Hijri date data
+        let hijriDateData = null;
+
+        // Fetch API Config from Firebase
+        async function fetchApiConfig() {
+            try {
+                const docRef = doc(db, FIREBASE_CONFIG.COLLECTION, FIREBASE_CONFIG.DOCUMENTS.API_CONFIG);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    console.log('✅ API Config fetched:', data);
+                    return {
+                        method: data.method || 4,
+                        latitude: data.latitude || 54.15,
+                        longitude: data.longitude || -4.48,
+                        methodName: data.methodName || 'Umm al-Qura, Makkah',
+                        schoolName: (data.schoolName || 'Shafi\'i, Maliki, Hanbali').replace("Shafi'i, Maliki, Ja'fari, Hanbali", "Shafi'i, Maliki, Hanbali"),
+                        offsetMinutes: {
+                            fajr: data.offsets?.fajr || 0,
+                            dhuhr: data.offsets?.dhuhr || 0,
+                            asr: data.offsets?.asr || 0,
+                            maghrib: data.offsets?.maghrib || 0,
+                            isha: data.offsets?.isha || 0,
+                        }
+                    };
+                } else {
+                    console.error('❌ API Config document not found');
+                    return null;
+                }
+            } catch (error) {
+                console.error('❌ Error fetching API config:', error);
+                return null;
+            }
+        }
+
+        // Fetch Daily Config from Firebase
+        async function fetchDailyConfig() {
+            try {
+                const docRef = doc(db, FIREBASE_CONFIG.COLLECTION, FIREBASE_CONFIG.DOCUMENTS.DAILY_CONFIG);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    console.log('✅ Daily Config fetched:', data);
+                    
+                    const dailyPrayers = data.dailyPrayers || {};
+                    
+                    return {
+                        mat: {
+                            fajr: dailyPrayers.fajr?.mat || '00:00',
+                            dhuhr: dailyPrayers.dhuhr?.mat || '00:00',
+                            asr: dailyPrayers.asr?.mat || '00:00',
+                            maghrib: dailyPrayers.maghrib?.mat || '00:00',
+                            isha: dailyPrayers.isha?.mat || '00:00',
+                        },
+                        mit: {
+                            fajr: dailyPrayers.fajr?.mit || '00:00',
+                            dhuhr: dailyPrayers.dhuhr?.mit || '00:00',
+                            asr: dailyPrayers.asr?.mit || '00:00',
+                            maghrib: dailyPrayers.maghrib?.mit || '00:00',
+                            isha: dailyPrayers.isha?.mit || '00:00',
+                        },
+                        specialPrayers: {
+                            jumaa: data.jumaa ? {
+                                adhan: data.jumaa.adhan_khutba || '',
+                                iqama: data.jumaa.iqama || '',
+                            } : undefined,
+                            jumaa2: data.jumaa2 ? {
+                                adhan: data.jumaa2.adhan_khutba || '',
+                                iqama: data.jumaa2.iqama || '',
+                            } : undefined,
+                            taraweeh: data.taraweeh?.time ? {
+                                time: data.taraweeh.time
+                            } : undefined,
+                            eidFitr: data.eid?.fitr ? {
+                                prayer1: { time: data.eid.fitr.prayer1?.time || '' },
+                                prayer2: { time: data.eid.fitr.prayer2?.time || '' }
+                            } : undefined,
+                            eidAdha: data.eid?.adha ? {
+                                prayer1: { time: data.eid.adha.prayer1?.time || '' },
+                                prayer2: { time: data.eid.adha.prayer2?.time || '' }
+                            } : undefined,
+                        }
+                    };
+                } else {
+                    console.error('❌ Daily Config document not found');
+                    return null;
+                }
+            } catch (error) {
+                console.error('❌ Error fetching daily config:', error);
+                return null;
+            }
+        }
+
+        // Fetch Fallback Rules from Firebase
+        async function fetchFallbackRules() {
+            try {
+                const docRef = doc(db, FIREBASE_CONFIG.COLLECTION, FIREBASE_CONFIG.DOCUMENTS.FALLBACK_RULES);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    console.log('✅ Fallback Rules fetched:', data);
+                    
+                    return {
+                        fajr: {
+                            matOffset: data.fajr?.matOffset || 0,
+                            mitOffset: data.fajr?.mitOffset || 5,
+                        },
+                        dhuhr: {
+                            matOffset: data.dhuhr?.matOffset || 0,
+                            mitOffset: data.dhuhr?.mitOffset || 5,
+                        },
+                        asr: {
+                            matOffset: data.asr?.matOffset || 0,
+                            mitOffset: data.asr?.mitOffset || 5,
+                        },
+                        maghrib: {
+                            matOffset: data.maghrib?.matOffset || 0,
+                            mitOffset: data.maghrib?.mitOffset || 5,
+                        },
+                        isha: {
+                            matOffset: data.isha?.matOffset || 0,
+                            mitOffset: data.isha?.mitOffset || 5,
+                        },
+                    };
+                } else {
+                    console.warn('⚠️ Fallback Rules document not found, using defaults');
+                    return {
+                        fajr: { matOffset: 0, mitOffset: 5 },
+                        dhuhr: { matOffset: 0, mitOffset: 5 },
+                        asr: { matOffset: 0, mitOffset: 5 },
+                        maghrib: { matOffset: 0, mitOffset: 5 },
+                        isha: { matOffset: 0, mitOffset: 5 },
+                    };
+                }
+            } catch (error) {
+                console.error('❌ Error fetching fallback rules:', error);
+                // Return defaults if fetch fails
+                return {
+                    fajr: { matOffset: 0, mitOffset: 5 },
+                    dhuhr: { matOffset: 0, mitOffset: 5 },
+                    asr: { matOffset: 0, mitOffset: 5 },
+                    maghrib: { matOffset: 0, mitOffset: 5 },
+                    isha: { matOffset: 0, mitOffset: 5 },
+                };
+            }
+        }
+
+        // Fetch prayer times from Aladhan API
+        async function fetchPrayerTimesFromAladhan(apiConfig) {
+            try {
+                const today = new Date();
+                const dateStr = `${String(today.getDate()).padStart(2, '0')}-${String(today.getMonth() + 1).padStart(2, '0')}-${today.getFullYear()}`;
+                
+                const url = `https://api.aladhan.com/v1/timings/${dateStr}?latitude=${apiConfig.latitude}&longitude=${apiConfig.longitude}&method=${apiConfig.method}&school=0`;
+                
+                console.log('🌐 Fetching from Aladhan API:', url);
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.code === 200 && data.data) {
+                    console.log('✅ Prayer times fetched from Aladhan');
+                    const timings = data.data.timings;
+                    const offsets = apiConfig.offsetMinutes;
+                    
+                    // Store Hijri date information
+                    if (data.data.date && data.data.date.hijri) {
+                        hijriDateData = data.data.date.hijri;
+                        console.log('✅ Hijri date extracted:', hijriDateData);
+                    }
+                    
+                    // Apply offsets
+                    const applyOffset = (time, offset) => {
+                        if (!time) return '00:00';
+                        const [hours, minutes] = time.split(':').map(Number);
+                        const totalMinutes = hours * 60 + minutes + offset;
+                        const newHours = Math.floor(totalMinutes / 60) % 24;
+                        const newMinutes = totalMinutes % 60;
+                        return `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
+                    };
+                    
+                    return {
+                        fajr: applyOffset(timings.Fajr, offsets.fajr),
+                        sunrise: applyOffset(timings.Sunrise, 0),
+                        dhuhr: applyOffset(timings.Dhuhr, offsets.dhuhr),
+                        asr: applyOffset(timings.Asr, offsets.asr),
+                        maghrib: applyOffset(timings.Maghrib, offsets.maghrib),
+                        isha: applyOffset(timings.Isha, offsets.isha),
+                    };
+                } else {
+                    console.error('❌ Invalid response from Aladhan API');
+                    return null;
+                }
+            } catch (error) {
+                console.error('❌ Error fetching from Aladhan:', error);
+                return null;
+            }
+        }
+
+        // Returns today's date key as YYYY-MM-DD
+        function getTodayKey() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        // Returns true only if a time string is valid, non-empty, non-zero
+        function isValidTime(t) {
+            return !!t && t !== '' && t !== '00:00';
+        }
+
+        // Fetch per-date scheduled times from Firebase (① highest priority)
+        // Non-fatal: returns null if document missing or no entry for today
+        async function fetchScheduledTimesForToday() {
+            try {
+                const docRef = doc(db, FIREBASE_CONFIG.COLLECTION, FIREBASE_CONFIG.DOCUMENTS.SCHEDULED_TIMES);
+                const docSnap = await getDoc(docRef);
+
+                if (!docSnap.exists()) {
+                    console.log('📅 No scheduledTimes document — using daily config');
+                    return null;
+                }
+
+                const all = docSnap.data();
+                const todayKey = getTodayKey();
+                const todayEntry = all?.[todayKey];
+
+                if (!todayEntry) {
+                    console.log(`📅 No scheduled entry for today (${todayKey}) — using daily config`);
+                    return null;
+                }
+
+                console.log(`✅ Scheduled times found for today (${todayKey})`);
+                return todayEntry;
+            } catch (error) {
+                console.error('❌ Error fetching scheduled times (falling back to daily config):', error);
+                return null;
+            }
+        }
+
+        // Load all data
+        async function loadPrayerData() {
+            try {
+                console.log('🔄 Loading prayer data...');
+                
+                // Fetch API config
+                const apiConfig = await fetchApiConfig();
+                if (!apiConfig) {
+                    console.error('❌ Failed to load API config');
+                    return false;
+                }
+                
+                // Fetch daily config
+                const dailyConfig = await fetchDailyConfig();
+                if (!dailyConfig) {
+                    console.error('❌ Failed to load daily config');
+                    return false;
+                }
+                
+                // Fetch scheduled times for today (① priority — overrides dailyConfig when set)
+                const scheduled = await fetchScheduledTimesForToday();
+
+                // v2: admin special prayers. Never fatal: if the read fails, the previous list is kept.
+                const specials = await fetchSpecialPrayers();
+                if (specials !== null) customSpecials = specials;
+
+                // Fetch fallback rules
+                const fallbackRules = await fetchFallbackRules();
+                console.log('📋 Fallback rules loaded:', fallbackRules);
+                
+                // Fetch prayer times from Aladhan
+                const aladhanTimes = await fetchPrayerTimesFromAladhan(apiConfig);
+                if (!aladhanTimes) {
+                    console.error('❌ Failed to load Aladhan times');
+                    return false;
+                }
+                
+                // Helper function to add minutes to a time
+                const addMinutes = (timeStr, minutesToAdd) => {
+                    if (!timeStr || timeStr === '--:--' || timeStr === '00:00') return '00:00';
+                    const [hours, minutes] = timeStr.split(':').map(Number);
+                    const totalMinutes = hours * 60 + minutes + minutesToAdd;
+                    const newHours = Math.floor(totalMinutes / 60) % 24;
+                    const newMinutes = totalMinutes % 60;
+                    return `${String(newHours).padStart(2, '0')}:${String(newMinutes).padStart(2, '0')}`;
+                };
+                
+                // MAT/MIT Priority:
+                //   ① scheduled[prayer].mat/mit  — per-date override (if set)
+                //   ② dailyConfig.mat/mit[prayer] — default manual times
+                //   ③ APT + fallbackRules offset  — auto fallback
+                const processPrayerTimes = (prayer) => {
+                    const apt = aladhanTimes[prayer];
+                    const rules = fallbackRules[prayer];
+
+                    // Resolve MAT
+                    const schedMat = scheduled?.[prayer]?.mat;
+                    const dailyMat = dailyConfig.mat[prayer];
+                    let mat;
+                    if (isValidTime(schedMat)) {
+                        mat = schedMat;
+                        console.log(`📅 ${prayer}: MAT from scheduledTimes (${mat})`);
+                    } else if (isValidTime(dailyMat)) {
+                        mat = dailyMat;
+                    } else {
+                        mat = addMinutes(apt, rules.matOffset);
+                        console.log(`ℹ️ ${prayer}: MAT fallback APT + ${rules.matOffset} mins (${mat})`);
+                    }
+
+                    // Resolve MIT
+                    const schedMit = scheduled?.[prayer]?.mit;
+                    const dailyMit = dailyConfig.mit[prayer];
+                    let mit;
+                    if (isValidTime(schedMit)) {
+                        mit = schedMit;
+                        console.log(`📅 ${prayer}: MIT from scheduledTimes (${mit})`);
+                    } else if (isValidTime(dailyMit)) {
+                        mit = dailyMit;
+                    } else {
+                        mit = addMinutes(mat, rules.mitOffset);
+                        console.log(`ℹ️ ${prayer}: MIT fallback MAT + ${rules.mitOffset} mins (${mit})`);
+                    }
+                    
+                    return { apt, mat, mit };
+                };
+                
+                // Combine all data with smart fallbacks
+                prayerData = {
+                    prayers: {
+                        fajr: processPrayerTimes('fajr'),
+                        sunrise: { apt: aladhanTimes.sunrise, mat: '--:--', mit: '--:--' },
+                        dhuhr: processPrayerTimes('dhuhr'),
+                        asr: processPrayerTimes('asr'),
+                        maghrib: processPrayerTimes('maghrib'),
+                        isha: processPrayerTimes('isha')
+                    },
+                    specialPrayers: dailyConfig.specialPrayers,
+                    config: {
+                        location: 'Isle of Man',
+                        method: apiConfig.methodName,
+                        school: apiConfig.schoolName,
+                        offsets: apiConfig.offsetMinutes
+                    }
+                };
+                
+                console.log('✅ All prayer data loaded:', prayerData);
+                return true;
+            } catch (error) {
+                console.error('❌ Error loading prayer data:', error);
+                return false;
+            }
+        }
+
+        // Render prayer times
+        function renderPrayerTimes() {
+            const container = document.getElementById('prayersGrid');
+            
+            const nextKey = getNextPrayerKey(); // v2: highlight the next prayer
+            const html = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha'].map(prayer => {
+                const times = prayerData.prayers[prayer];
+                const names = PRAYER_NAMES[prayer];
+                
+                return `
+                    <div class="prayer-card ${prayer === nextKey ? 'next-prayer' : ''}">
+                        <div class="prayer-header">
+                            <div class="prayer-name-en">${names.en}</div>
+                            <div class="prayer-name-ar">${names.ar}</div>
+                        </div>
+                        <div class="prayer-times-row">
+                            <div class="time-box">
+                                <div class="time-label">START TIME</div>
+                                <div class="time-value">${escapeHtml(times.apt)}</div>
+                            </div>
+                            <div class="time-box">
+                                <div class="time-label">Adhan</div>
+                                <div class="time-value">${escapeHtml(times.mat)}</div>
+                            </div>
+                            <div class="time-box">
+                                <div class="time-label">Iqama</div>
+                                <div class="time-value">${escapeHtml(times.mit)}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            setHtmlIfChanged(container, html, 'prayers');
+        }
+
+        // Render special prayers
+        function renderSpecialPrayers() {
+            const container = document.getElementById('specialPrayersGrid');
+            const special = prayerData.specialPrayers;
+            let html = '';
+            let hasSpecialPrayers = false;
+
+            // Jumu'ah - show always if it has values
+            if (special.jumaa && special.jumaa.adhan && special.jumaa.iqama) {
+                hasSpecialPrayers = true;
+                html += `
+                    <div class="special-card">
+                        <div class="special-name-wrapper">
+                            <div class="special-name-en">${PRAYER_NAMES.jumaa.en}</div>
+                            <div class="special-name-ar">${PRAYER_NAMES.jumaa.ar}</div>
+                        </div>
+                        <div class="special-time">Adhan: ${escapeHtml(special.jumaa.adhan)} / Iqama: ${escapeHtml(special.jumaa.iqama)}</div>
+                    </div>
+                `;
+            }
+
+            // 2nd Jumu'ah (only rendered when set — new app only field)
+            if (special.jumaa2 && special.jumaa2.adhan && special.jumaa2.iqama) {
+                hasSpecialPrayers = true;
+                html += `
+                    <div class="special-card">
+                        <div class="special-name-wrapper">
+                            <div class="special-name-en">${PRAYER_NAMES.jumaa2.en}</div>
+                            <div class="special-name-ar">${PRAYER_NAMES.jumaa2.ar}</div>
+                        </div>
+                        <div class="special-time">Adhan: ${escapeHtml(special.jumaa2.adhan)} / Iqama: ${escapeHtml(special.jumaa2.iqama)}</div>
+                    </div>
+                `;
+            }
+
+            // Taraweeh
+            if (special.taraweeh && special.taraweeh.time) {
+                hasSpecialPrayers = true;
+                html += `
+                    <div class="special-card">
+                        <div class="special-name-wrapper">
+                            <div class="special-name-en">${PRAYER_NAMES.taraweeh.en}</div>
+                            <div class="special-name-ar">${PRAYER_NAMES.taraweeh.ar}</div>
+                        </div>
+                        <div class="special-time">${escapeHtml(special.taraweeh.time)}</div>
+                    </div>
+                `;
+            }
+
+            // Eid al-Fitr
+            if (special.eidFitr) {
+                const hasEidFitr = (special.eidFitr.prayer1 && special.eidFitr.prayer1.time) || 
+                                   (special.eidFitr.prayer2 && special.eidFitr.prayer2.time);
+                if (hasEidFitr) {
+                    hasSpecialPrayers = true;
+                    let timeDisplay = '';
+                    if (special.eidFitr.prayer1 && special.eidFitr.prayer1.time) {
+                        timeDisplay += `1st: ${special.eidFitr.prayer1.time}`;
+                    }
+                    if (special.eidFitr.prayer2 && special.eidFitr.prayer2.time) {
+                        if (timeDisplay) timeDisplay += ' / ';
+                        timeDisplay += `2nd: ${special.eidFitr.prayer2.time}`;
+                    }
+                    
+                    html += `
+                        <div class="special-card">
+                            <div class="special-name-wrapper">
+                                <div class="special-name-en">${PRAYER_NAMES.eidFitr.en}</div>
+                                <div class="special-name-ar">${PRAYER_NAMES.eidFitr.ar}</div>
+                            </div>
+                            <div class="special-time">${escapeHtml(timeDisplay)}</div>
+                        </div>
+                    `;
+                }
+            }
+
+            // Eid al-Adha
+            if (special.eidAdha) {
+                const hasEidAdha = (special.eidAdha.prayer1 && special.eidAdha.prayer1.time) || 
+                                   (special.eidAdha.prayer2 && special.eidAdha.prayer2.time);
+                if (hasEidAdha) {
+                    hasSpecialPrayers = true;
+                    let timeDisplay = '';
+                    if (special.eidAdha.prayer1 && special.eidAdha.prayer1.time) {
+                        timeDisplay += `1st: ${special.eidAdha.prayer1.time}`;
+                    }
+                    if (special.eidAdha.prayer2 && special.eidAdha.prayer2.time) {
+                        if (timeDisplay) timeDisplay += ' / ';
+                        timeDisplay += `2nd: ${special.eidAdha.prayer2.time}`;
+                    }
+                    
+                    html += `
+                        <div class="special-card">
+                            <div class="special-name-wrapper">
+                                <div class="special-name-en">${PRAYER_NAMES.eidAdha.en}</div>
+                                <div class="special-name-ar">${PRAYER_NAMES.eidAdha.ar}</div>
+                            </div>
+                            <div class="special-time">${escapeHtml(timeDisplay)}</div>
+                        </div>
+                    `;
+                }
+            }
+
+            // v2: admin-created special prayers (only while visible)
+            const now = new Date();
+            customSpecials.filter(sp => isSpecialPrayerVisible(sp, now)).forEach(sp => {
+                hasSpecialPrayers = true;
+                html += `
+                    <div class="special-card" data-custom-id="${escapeHtml(sp.id)}">
+                        <div class="special-name-wrapper">
+                            <div class="special-name-en">${escapeHtml(sp.name)}</div>
+                        </div>
+                        <div class="special-time">${escapeHtml(formatSpecialWhen(sp, now))}</div>
+                    </div>
+                `;
+            });
+
+            setHtmlIfChanged(container, html || '<div style="padding: 20px; color: #6C757D; text-align: center;">No special prayers today</div>', 'specials');
+        }
+
+        // Update configuration info
+        function updateConfigInfo() {
+            document.getElementById('location').textContent = prayerData.config.location;
+            document.getElementById('method').textContent = prayerData.config.method;
+            document.getElementById('school').textContent = prayerData.config.school;
+
+            // Build offset display: only show non-zero values
+            const o = prayerData.config.offsets || {};
+            const parts = [
+                o.fajr    ? `Fajr ${o.fajr > 0 ? '+' : ''}${o.fajr}`        : null,
+                o.dhuhr   ? `Dhuhr ${o.dhuhr > 0 ? '+' : ''}${o.dhuhr}`      : null,
+                o.asr     ? `Asr ${o.asr > 0 ? '+' : ''}${o.asr}`            : null,
+                o.maghrib ? `Maghrib ${o.maghrib > 0 ? '+' : ''}${o.maghrib}` : null,
+                o.isha    ? `Isha ${o.isha > 0 ? '+' : ''}${o.isha}`          : null,
+            ].filter(Boolean);
+            document.getElementById('offsets').textContent = parts.length ? parts.join(', ') : 'None';
+        }
+
+        // Update date
+        function updateDate() {
+            // Update Gregorian date
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('widgetDate').textContent = now.toLocaleDateString('en-GB', options);
+            
+            // Update Hijri date
+            updateHijriDate();
+        }
+
+        // Update Hijri date
+        function updateHijriDate() {
+            const hijriElement = document.getElementById('hijriDate');
+            
+            if (hijriDateData) {
+                // Format Hijri date: Day Month Year
+                const day = hijriDateData.day;
+                const month = hijriDateData.month.en;
+                const year = hijriDateData.year;
+                
+                hijriElement.textContent = `${day} ${month} ${year} AH`;
+                console.log('✅ Hijri date displayed:', hijriElement.textContent);
+            } else {
+                hijriElement.textContent = 'Hijri date unavailable';
+                console.warn('⚠️ Hijri date data not available');
+            }
+        }
+
+        // Initialize widget
+        async function init() {
+            console.log('🚀 Initializing Prayer Times Widget...');
+            
+            // Load data from Firebase and Aladhan
+            const success = await loadPrayerData();
+            
+            if (!success) {
+                document.getElementById('loading').innerHTML = '❌ Failed to load prayer data. Please refresh the page.';
+                return;
+            }
+            
+            // Hide loading, show widget
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('widget').classList.remove('hidden');
+
+            // v2: gentle entrance on the first render only
+            const widget = document.getElementById('widget');
+            const lists = [document.getElementById('prayersGrid'), document.getElementById('specialPrayersGrid')];
+            widget.classList.add('widget-enter');
+            lists.forEach(el => el.classList.add('animate-in'));
+            setTimeout(() => {
+                widget.classList.remove('widget-enter');
+                lists.forEach(el => el.classList.remove('animate-in'));
+            }, 2000);
+            
+            // Render all content
+            renderPrayerTimes();
+            renderSpecialPrayers();
+            updateConfigInfo();
+            updateDate();
+            
+            console.log('✅ Widget initialized successfully');
+
+            // v2: keep a page that is left open correct.
+            // Every minute: the next-prayer highlight and which special prayers are visible.
+            // Every 30 minutes and just after midnight: fresh times (if a refresh fails, the page keeps what it shows).
+            const refresh = async () => {
+                if (await loadPrayerData()) {
+                    renderPrayerTimes();
+                    renderSpecialPrayers();
+                    updateConfigInfo();
+                    updateDate();
+                }
+            };
+            setInterval(() => { renderPrayerTimes(); renderSpecialPrayers(); }, 60 * 1000);
+            setInterval(refresh, 30 * 60 * 1000);
+            const scheduleMidnightRefresh = () => {
+                const now = new Date();
+                const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 30);
+                setTimeout(async () => { await refresh(); scheduleMidnightRefresh(); }, next - now);
+            };
+            scheduleMidnightRefresh();
+        }
+
+        // Start the widget
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('📱 DOM loaded, starting initialization...');
+            init();
+        });
+    </script>
+</body>
+</html>
