@@ -72,3 +72,10 @@ All pages: `?emulator` on localhost uses the local Firebase emulators and shows 
 * The event text sizes now follow the height as well as the width on every screen (they were only in the short-screen rule), so the bar fits; at 1080p the text sizes are unchanged.
 * Checked in Edge: the bar equals the ring; amber at 2 min 25 s and red at 25 s before Dhuhr (clock shifted in the test); fits at twelve sizes from 1024x768 to 3840x2160, including 1851x1046; no page errors.
 
+## 19 November 2026: amber and red everywhere on the Emerald pages (branch `pttv/v2.0-ring-colours`, published with the owner's approval)
+
+* Same rule as the event bar: amber under 3 minutes, red under 1 minute before the next event.
+* `index-emerald.html` (live) is now identical to `index-emerald-v3.html`: QR fix, big 3D event bar, ring colours and the `?preview=event` switch.
+* `iaiom-emerald.html` (website widget): the small ring turns amber and red too (it now refreshes every 5 seconds so the colours change on time). The masjid website only changes when its admin copies the file in.
+* `index.html` and `iaiom.html` (Classic) are untouched, by the owner's instruction.
+
