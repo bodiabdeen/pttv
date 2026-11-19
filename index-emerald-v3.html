@@ -50,7 +50,7 @@
             font-size: clamp(11px, 1vw, 15px); padding: 4px 10px; border-radius: 6px;
         }
         .emulator-badge {
-            position: fixed; right: 10px; bottom: 8px; z-index: 900;
+            position: fixed; right: 10px; bottom: 8px; z-index: 10000;
             background: #FFA500; color: #111; font-weight: 800;
             font-size: clamp(11px, 1vw, 15px); padding: 4px 10px; border-radius: 6px;
         }
@@ -790,6 +790,8 @@
     <div id="offlineMarker" class="offline-marker hidden">⚠ Offline · showing saved times</div>
     <!-- v2: shown only in local testing (?emulator on localhost) -->
     <div id="emulatorBadge" class="emulator-badge hidden">EMULATOR · local test data, not live</div>
+    <!-- Shown only with ?preview=event in the address: a preview of the event screen, not a real event -->
+    <div id="previewBadge" class="emulator-badge hidden">PREVIEW · not a real event</div>
 
     <!-- Normal Mode -->
     <div id="app" class="hidden">
@@ -965,6 +967,17 @@
             connectFirestoreEmulator(db, '127.0.0.1', 8080);
             document.getElementById('emulatorBadge').classList.remove('hidden');
             console.warn('🧪 Using the local Firestore emulator (test data, not live)');
+        }
+
+        // Event screen preview, for checking the event screen on a TV without waiting.
+        // Only with ?preview=event in the address (the normal TV address is unaffected). It steps through
+        // today's real events, 15 seconds each; add &type=APT (or MAT, MIT, ...) to show one kind only.
+        const PREVIEW_PARAMS = new URLSearchParams(location.search);
+        const PREVIEW_EVENT = PREVIEW_PARAMS.get('preview') === 'event';
+        const PREVIEW_TYPE = (PREVIEW_PARAMS.get('type') || '').toUpperCase();
+        if (PREVIEW_EVENT) {
+            document.getElementById('previewBadge').classList.remove('hidden');
+            console.warn('👀 Event screen preview (?preview=event): not a real event');
         }
 
         // v2: everything inserted as HTML is escaped first
@@ -1833,6 +1846,10 @@
 
         // Check if we're currently in an active event
         function getCurrentActiveEvent() {
+            if (PREVIEW_EVENT) {
+                const list = getAllEvents().filter(e => !PREVIEW_TYPE || e.type === PREVIEW_TYPE);
+                if (list.length) return list[Math.floor(Date.now() / 15000) % list.length];
+            }
             const now = new Date();
             const currentMinutes = now.getHours() * 60 + now.getMinutes();
             const events = getAllEvents();

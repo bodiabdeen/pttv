@@ -770,6 +770,9 @@
         .event-mode { background: linear-gradient(135deg, #072A2F 0%, #0A3B3D 60%, #0C4A43 100%); }
         .event-badge { background: #00A86B; color: #FFFFFF; border-radius: 999px; }
         .event-next-section { background: rgba(255, 255, 255, 0.06); border: clamp(1px, 0.1vw, 2px) solid rgba(255, 255, 255, 0.08); border-radius: clamp(10px, 1.2vw, 20px); }
+        /* QR codes: sized by width AND height so they never fall off the bottom of shorter screens,
+           with a white quiet zone so phone cameras can read them on the dark background */
+        .qr-img { width: clamp(64px, min(10vw, 14vh), 150px); height: clamp(64px, min(10vw, 14vh), 150px); box-sizing: border-box; padding: clamp(4px, 0.5vw, 8px); background: #FFFFFF; border-radius: 8px; display: block; }
         @media (max-height: 820px) {
             .giant-countdown.em-ring-wrap { width: min(24vw, 33vh); }
             .config-strip { display: none; }
@@ -879,12 +882,12 @@
                         </div>
                         <div class="qr-boxes">
                             <div class="qr-box">
-                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://play.google.com/store/apps/details?id=com.iomprayertimes" alt="Android QR" style="width: clamp(90px, 10vw, 150px); height: clamp(90px, 10vw, 150px); border-radius: 8px;">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://play.google.com/store/apps/details?id=com.iomprayertimes" alt="Android QR" class="qr-img">
                                 <br>
                                 <div class="qr-label">Android</div>
                             </div>
                             <div class="qr-box">
-                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://apps.apple.com/gb/app/iom-prayer-times/id6758450458" alt="iOS QR" style="width: clamp(90px, 10vw, 150px); height: clamp(90px, 10vw, 150px); border-radius: 8px;">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://apps.apple.com/gb/app/iom-prayer-times/id6758450458" alt="iOS QR" class="qr-img">
                                 <br>
                                 <div class="qr-label">iOS</div>
                             </div>
@@ -2171,9 +2174,25 @@
             show.classList.remove('hidden', 'mode-enter');
             void show.offsetWidth; // restart the fade animation
             show.classList.add('mode-enter');
-            if (mode === 'normal') fitSpecialRows();
+            if (mode === 'normal') { fitSpecialRows(); fitRightPanel(); }
         }
-        window.addEventListener('resize', () => fitSpecialRows());
+        window.addEventListener('resize', () => { fitSpecialRows(); fitRightPanel(); });
+
+        // Keeps the "Download our app" QR codes fully on screen: if the right panel's content runs
+        // past the bottom (short screens, a browser toolbar), the ring shrinks by exactly the missing
+        // height. Where everything fits, the ring keeps its normal size.
+        function fitRightPanel() {
+            const ring = document.querySelector('.giant-countdown.em-ring-wrap');
+            const strip = document.querySelector('.download-strip');
+            const panel = strip && strip.closest('.right-panel');
+            if (!ring || !panel || !panel.offsetParent) return;
+            ring.style.width = '';
+            const natural = ring.getBoundingClientRect().width;
+            const limit = panel.getBoundingClientRect().bottom - parseFloat(getComputedStyle(panel).paddingBottom);
+            const over = strip.getBoundingClientRect().bottom - limit;
+            if (over > 1) ring.style.width = Math.max(natural - over - 4, natural * 0.6) + 'px';
+        }
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitRightPanel);
 
         // Update event mode display
         function updateEventMode() {
@@ -2231,6 +2250,7 @@
             updateCurrentTime();
             updateCountdown();
             updateEventMode();
+            fitRightPanel();
         }
 
         async function refreshData() {

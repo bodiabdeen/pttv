@@ -53,3 +53,8 @@ All pages: `?emulator` on localhost uses the local Firebase emulators and shows 
 
 * The website widget's Hijri date comes from Aladhan, while the TV computes it in the browser (improvement plan C4).
 * Related branches: app `iom/release/v2.0`, backend `iombe/v2.0`, Wear OS watch `v2.0`.
+
+## 19 November 2026: QR fix and event preview (branch `pttv/v2.0-qr-fix`, merged into `pttv/v2.0` with the owner's approval)
+
+* `index-emerald.html` (live): the "Download our app" QR codes size by height as well as width and have a white quiet zone; if the right panel still runs past the bottom, `fitRightPanel()` shrinks the ring by exactly the missing height. Unchanged at 1080p and 4K. Only windows wider than about 3:1 still clip. The Classic `index.html` has the same problem on short screens; the owner chose not to fix it for now.
+* `index-emerald-v3.html` (review copy): the same fix plus an event screen preview. Open it with `?preview=event` to see the event screen now, stepping through today's real events every 15 seconds (`&type=APT`, `MAT`, `MIT` and so on for one kind). An orange "PREVIEW" tag shows. The normal address is unaffected.
