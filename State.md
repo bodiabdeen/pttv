@@ -58,3 +58,11 @@ All pages: `?emulator` on localhost uses the local Firebase emulators and shows 
 
 * `index-emerald.html` (live): the "Download our app" QR codes size by height as well as width and have a white quiet zone; if the right panel still runs past the bottom, `fitRightPanel()` shrinks the ring by exactly the missing height. Unchanged at 1080p and 4K. Only windows wider than about 3:1 still clip. The Classic `index.html` has the same problem on short screens; the owner chose not to fix it for now.
 * `index-emerald-v3.html` (review copy): the same fix plus an event screen preview. Open it with `?preview=event` to see the event screen now, stepping through today's real events every 15 seconds (`&type=APT`, `MAT`, `MIT` and so on for one kind). An orange "PREVIEW" tag shows. The normal address is unaffected.
+
+## 19 November 2026: event screen progress bar (branch `pttv/v2.0-event-bar`, review copy only)
+
+* `index-emerald-v3.html`: under the "Next event" countdown on the event screen, a bar fills from the previous event to the next one, the linear twin of the main screen's ring (both use the same progress value). It turns warm (`#FFE08A`) in the last five minutes, like the countdown; no transition with reduced motion.
+* Screens under 820px tall: the event screen's text now sizes by height too, so the "Next event" card and the bar stay on screen (before this, 1366x768, 1280x720 and 1536x730 cut off the bottom and the title touched the clock box). Taller screens are unchanged.
+* Checked in Edge with live data and `?preview=event`: bar equals the ring (89.71%), warm at 12:02 before Dhuhr 12:05 (clock shifted in the test), fits at ten sizes from 1024x768 to 3840x2160, no page errors.
+* Not yet in the live `index-emerald.html`; the Classic `index.html` is not changed.
+
