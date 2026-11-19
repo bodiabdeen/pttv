@@ -66,3 +66,9 @@ All pages: `?emulator` on localhost uses the local Firebase emulators and shows 
 * Checked in Edge with live data and `?preview=event`: bar equals the ring (89.71%), warm at 12:02 before Dhuhr 12:05 (clock shifted in the test), fits at ten sizes from 1024x768 to 3840x2160, no page errors.
 * Not yet in the live `index-emerald.html`; the Classic `index.html` is not changed.
 
+## 19 November 2026: bigger event bar (branch `pttv/v2.0-event-bar-big`, review copy only)
+
+* Owner asked for a more visible bar: it moved out of the "Next event" card to a full-width 3D bar (`#eventBar`) between the event time and the bottom cards. Emerald normally, amber (`warn`) under 3 minutes, red (`urgent`, gently glowing) under 1 minute. The countdown text still turns gold at 5 minutes, as before.
+* The event text sizes now follow the height as well as the width on every screen (they were only in the short-screen rule), so the bar fits; at 1080p the text sizes are unchanged.
+* Checked in Edge: the bar equals the ring; amber at 2 min 25 s and red at 25 s before Dhuhr (clock shifted in the test); fits at twelve sizes from 1024x768 to 3840x2160, including 1851x1046; no page errors.
+
