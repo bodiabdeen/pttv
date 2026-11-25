@@ -1,6 +1,6 @@
 # pttv: working rules
 
-GitHub Pages site (`https://pttv.abdeen.uk/`, served from branch `pttv/v2.0` since 18 November 2026). `index.html` is the LIVE masjid TV display and `index-emerald.html` the same display in the Emerald look. `iaiom.html` and `iaiom-emerald.html` are the website widget (Classic and Emerald), which the masjid website's admin copies by hand into the website.
+GitHub Pages site (`https://pttv.abdeen.uk/`, served from branch `pttv/v2.0` since 18 November 2026). `index.html` is the LIVE masjid TV display (Emerald look since 25 November 2026), `index-emerald.html` an identical copy kept for old links, and `index-classic.html` the old Classic display. `iaiom.html` and `iaiom-emerald.html` are the website widget (Classic and Emerald), which the masjid website's admin copies by hand into the website.
 
 * New work goes on a new branch. Never commit to existing branches, and never push to the branch GitHub Pages serves from without the owner's approval: it changes the screen in the masjid immediately.
 * For new work, make review copies first (for example `index-v3.html`); the owner replaces the live files after reviewing. A change to how a page works must go into both its Classic and Emerald files.

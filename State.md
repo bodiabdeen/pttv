@@ -79,3 +79,11 @@ All pages: `?emulator` on localhost uses the local Firebase emulators and shows 
 * `iaiom-emerald.html` (website widget): the small ring turns amber and red too (it now refreshes every 5 seconds so the colours change on time). The masjid website only changes when its admin copies the file in.
 * `index.html` and `iaiom.html` (Classic) are untouched, by the owner's instruction.
 
+
+## 25 November 2026: Emerald becomes the main TV page (branch `pttv/v2.0-emerald-live`, merged into `pttv/v2.0` with the owner's approval)
+
+* `index.html` is now the Emerald TV (a copy of `index-emerald.html`, only the title differs), so the masjid TV, which opens `https://pttv.abdeen.uk/`, switches to Emerald without anyone touching it.
+* The old Classic TV is kept as `index-classic.html`. `index-emerald.html` stays as it is, so links to it keep working.
+* Both pages use the same saved data (`pt_tv_cache_v2`), so the offline start-up keeps working across the switch.
+* When the TV changes: the page reloads itself once a day at 03:00 (only when online). GitHub Pages caches for 10 minutes, so the TV picks up Emerald at the next 03:00 reload, or straight away if it is restarted or refreshed.
+* To go back: copy `index-classic.html` over `index.html`, or choose the branch `pttv/v1.5` in the Pages settings.
